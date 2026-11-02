@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS11 Module 16 – Information Security | San Joaquin Delta College</title>
+<style>
+  :root {
+    --user-primary: #1a4480;
+    --user-accent: #c8102e;
+    --user-background: #ffffff;
+    --ink: #1b1f24;
+    --muted: #5b6573;
+    --line: #d6dce4;
+    --tint: #eef3fa;
+    --ok: #1e7b3a;
+    --ok-bg: #e7f5ec;
+    --bad: #b3261e;
+    --bad-bg: #fdecea;
+    --warn-bg: #fff6e0;
+    --radius: 12px;
+    --shadow: 0 2px 10px rgba(26, 68, 128, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Calibri, Arial, sans-serif; background: var(--user-background); color: var(--ink); line-height: 1.55; }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--user-accent); outline-offset: 2px; }
+  code { font-family: Consolas, "Courier New", monospace; background: var(--tint); color: var(--user-primary); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; word-break: break-all; }
+
+  header { background: var(--user-primary); color: #fff; padding: 22px 20px 0; }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  header .kicker { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+  header h1 { margin: 4px 0 6px; font-size: 1.75rem; }
+  header p { margin: 0 0 14px; opacity: 0.92; }
+  .progress-row { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; font-size: 0.9rem; }
+  .progress { flex: 1; height: 10px; background: rgba(255,255,255,0.25); border-radius: 99px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; width: 0; background: #fff; transition: width 0.4s; }
+  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs button { background: transparent; color: #fff; border: 0; padding: 10px 14px; border-radius: 10px 10px 0 0; font-weight: 600; opacity: 0.85; }
+  nav.tabs button[aria-selected="true"] { background: var(--user-background); color: var(--user-primary); opacity: 1; }
+  nav.tabs .num { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 6px; font-size: 0.8rem; }
+  nav.tabs button[aria-selected="true"] .num { background: var(--user-primary); color: #fff; }
+  nav.tabs .done::after { content: " ✓"; }
+
+  main { padding: 24px 20px 60px; }
+  section.panel { display: none; }
+  section.panel.active { display: block; }
+  h2 { color: var(--user-primary); margin: 0 0 6px; font-size: 1.5rem; }
+  h3 { color: var(--user-primary); margin: 26px 0 8px; font-size: 1.15rem; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  .bloom { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--tint); color: var(--user-primary); margin-right: 6px; vertical-align: middle; }
+  .bloom.high { background: #fbe7ea; color: var(--user-accent); }
+  .card-box { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); background: #fff; margin: 14px 0; }
+  .btn { background: var(--user-primary); color: #fff; border: 2px solid var(--user-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost { background: #fff; color: var(--user-primary); }
+  .btn.accent { background: var(--user-accent); border-color: var(--user-accent); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .lesson-tag { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+
+  /* Flashcards */
+  .fc-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .chip { border: 2px solid var(--user-primary); background: #fff; color: var(--user-primary); border-radius: 99px; padding: 5px 13px; font-weight: 600; font-size: 0.88rem; }
+  .chip[aria-pressed="true"] { background: var(--user-primary); color: #fff; }
+  .flash-stage { perspective: 1400px; margin: 10px auto; max-width: 720px; }
+  .flash { position: relative; width: 100%; min-height: 290px; border: 0; padding: 0; background: none; transform-style: preserve-3d; transition: transform 0.55s; text-align: left; }
+  .flash.flipped { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; padding: 30px 26px 26px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); overflow: auto; }
+  .face.front { background: #fff; border: 2px solid var(--user-primary); }
+  .face.back { background: var(--user-primary); color: #fff; transform: rotateY(180deg); }
+  .face .tag { position: absolute; top: 12px; left: 16px; display: flex; gap: 6px; align-items: center; }
+  .face.back .lesson-tag { color: #dfe7f3; }
+  .face .hint { position: absolute; bottom: 10px; right: 16px; font-size: 0.78rem; opacity: 0.7; }
+  .face .q { font-size: 1.25rem; font-weight: 600; }
+  .face .a { font-size: 1.05rem; }
+  .fc-nav { display: flex; justify-content: space-between; align-items: center; max-width: 720px; margin: 14px auto 0; gap: 10px; flex-wrap: wrap; }
+  .fc-stats { color: var(--muted); font-size: 0.92rem; }
+
+  .misc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+  .misc { border: 1px solid #f2c4cb; background: #fff7f8; border-radius: var(--radius); padding: 14px 16px; }
+  .misc h4 { margin: 0 0 6px; color: var(--user-accent); font-size: 1rem; }
+  .misc .label { font-weight: 700; }
+
+  .selfcheck { border: 2px dashed var(--user-primary); border-radius: var(--radius); padding: 16px 18px; margin-top: 30px; background: var(--tint); }
+  .selfcheck h3 { margin-top: 0; }
+  .opts { display: grid; gap: 8px; margin: 8px 0 4px; }
+  .opt { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 9px 12px; color: var(--ink); }
+  .opt:hover:not(:disabled) { border-color: var(--user-primary); }
+  .opt.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .opt.picked { border-color: var(--user-primary); background: var(--tint); }
+  .opt:disabled { cursor: default; }
+  .feedback { margin: 6px 0 0; padding: 9px 12px; border-radius: 8px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--ok-bg); color: #13502a; }
+  .feedback.bad { background: var(--bad-bg); color: #7d1a14; }
+  .confidence { margin-top: 12px; }
+  .confidence button { margin: 4px 6px 4px 0; }
+
+  .step { border-left: 4px solid var(--user-primary); background: #fff; padding: 10px 14px; margin: 12px 0; border-radius: 0 10px 10px 0; box-shadow: var(--shadow); }
+  .step h4 { margin: 0 0 4px; color: var(--user-primary); }
+  .step .why { background: var(--warn-bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 0.95rem; }
+  .step.hidden { display: none; }
+  .scenario { background: var(--tint); border-radius: var(--radius); padding: 14px 16px; }
+  .scenario strong { color: var(--user-primary); }
+
+  /* Email mock-up */
+  .email { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 12px 0; box-shadow: var(--shadow); background: #fff; }
+  .email .bar { background: #f3f5f8; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+  .email .bar div { margin: 2px 0; }
+  .email .bar b { display: inline-block; width: 68px; color: var(--muted); font-weight: 600; }
+  .email .body { padding: 14px 16px; }
+  .email .fake-link { color: #0b57d0; text-decoration: underline; }
+  .email .hover { display: inline-block; margin-top: 6px; font-size: 0.82rem; background: #333; color: #fff; padding: 3px 8px; border-radius: 4px; font-family: Consolas, monospace; word-break: break-all; }
+  .email .attach { display: inline-block; margin-top: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-size: 0.9rem; background: #fafafa; }
+  .flag-list label { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 2px solid var(--line); border-radius: 8px; margin: 6px 0; background: #fff; }
+  .flag-list label.okl { border-color: var(--ok); background: var(--ok-bg); }
+  .flag-list label.nol { border-color: var(--bad); background: var(--bad-bg); }
+  .flag-list input { margin-top: 4px; transform: scale(1.2); }
+
+  table.data { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95rem; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  table.data th { background: var(--user-primary); color: #fff; }
+  table.data tr:nth-child(even) td { background: #f7f9fc; }
+
+  .q-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
+  .q-text { font-size: 1.1rem; font-weight: 600; margin: 8px 0; }
+  .dots { display: flex; gap: 5px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .dots span.cur { outline: 2px solid var(--user-primary); }
+  .dots span.r { background: var(--ok); }
+  .dots span.w { background: var(--bad); }
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--user-primary); }
+
+  .match-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; }
+  .match-col { display: grid; gap: 8px; align-content: start; }
+  .m-item { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 10px 12px; color: var(--ink); }
+  .m-item.term { font-weight: 700; color: var(--user-primary); }
+  .m-item.sel { border-color: var(--user-primary); background: var(--tint); }
+  .m-item.matched { border-color: var(--ok); background: var(--ok-bg); cursor: default; }
+  .m-item.shake { animation: shake 0.35s; border-color: var(--bad); }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  textarea { width: 100%; min-height: 110px; border: 2px solid var(--line); border-radius: 9px; padding: 10px; font: inherit; resize: vertical; }
+  textarea.tall { min-height: 220px; }
+  .wordcount { font-size: 0.85rem; color: var(--muted); }
+  .reveal { display: none; margin-top: 12px; }
+  .reveal.show { display: block; }
+  .rubric label { display: block; margin: 6px 0; }
+  .expert { background: var(--ok-bg); border-radius: 10px; padding: 12px 14px; }
+  .expert ul { margin: 6px 0 0; padding-left: 20px; }
+  .timeline { margin: 8px 0; padding-left: 20px; }
+  .timeline li { margin: 4px 0; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 20px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 640px) {
+    .match-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.35rem; }
+    .flash { min-height: 340px; }
+    table.data { font-size: 0.85rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flash, .progress > span { transition: none; }
+    .m-item.shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">San Joaquin Delta College · CS11 Introduction to Computing &amp; Information Technology</div>
+    <h1>Module 16: Information Security</h1>
+    <p>Protecting data at the machine, network, and Internet levels. Complete the five sections in order; each one ends with a quick self-check.</p>
+    <div class="progress-row">
+      <span>Progress</span>
+      <div class="progress" role="progressbar" aria-label="Sections completed" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><span id="progBar"></span></div>
+      <span id="progText">0 of 5 sections</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Study sections">
+      <button role="tab" aria-selected="true" aria-controls="s1" id="t1"><span class="num">1</span>Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="s2" id="t2" tabindex="-1"><span class="num">2</span>Worked Example</button>
+      <button role="tab" aria-selected="false" aria-controls="s3" id="t3" tabindex="-1"><span class="num">3</span>Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="s4" id="t4" tabindex="-1"><span class="num">4</span>Matching</button>
+      <button role="tab" aria-selected="false" aria-controls="s5" id="t5" tabindex="-1"><span class="num">5</span>Think Deeper</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ================= SECTION 1: FLASHCARDS ================= -->
+  <section class="panel active" id="s1" role="tabpanel" aria-labelledby="t1">
+    <h2>1. Flashcards</h2>
+    <p class="lead">Start with <strong>Remember</strong> cards (key terms), then <strong>Understand</strong> (how and why defenses work), then <strong>Apply</strong> (real situations). Click a card or press <kbd>Space</kbd> to flip it, and use <kbd>←</kbd> <kbd>→</kbd> to move between cards.</p>
+
+    <div class="fc-controls" role="group" aria-label="Filter by Bloom's level">
+      <button class="chip" data-level="All" aria-pressed="true">All levels</button>
+      <button class="chip" data-level="Remember" aria-pressed="false">Remember</button>
+      <button class="chip" data-level="Understand" aria-pressed="false">Understand</button>
+      <button class="chip" data-level="Apply" aria-pressed="false">Apply</button>
+    </div>
+    <div class="fc-controls" role="group" aria-label="Filter by lesson">
+      <button class="chip" data-lesson="All" aria-pressed="true">All lessons</button>
+      <button class="chip" data-lesson="16.1" aria-pressed="false">16.1 Data Loss Prevention</button>
+      <button class="chip" data-lesson="16.2" aria-pressed="false">16.2 Network Security</button>
+      <button class="chip" data-lesson="16.3" aria-pressed="false">16.3 Internet Security</button>
+      <button class="chip" id="fcReviewOnly" aria-pressed="false">Review pile only</button>
+      <button class="btn ghost" id="fcShuffle">Shuffle</button>
+    </div>
+
+    <div class="flash-stage">
+      <button class="flash" id="flash" aria-label="Flashcard. Activate to flip.">
+        <div class="face front"><span class="tag" id="fcTagF"></span><div class="q" id="fcFront"></div><span class="hint">Click to flip</span></div>
+        <div class="face back"><span class="tag" id="fcTagB"></span><div class="a" id="fcBack"></div><span class="hint">Click to flip back</span></div>
+      </button>
+    </div>
+    <div class="fc-nav">
+      <button class="btn ghost" id="fcPrev" aria-label="Previous card">← Prev</button>
+      <span class="fc-stats" id="fcCount" aria-live="polite"></span>
+      <div class="row">
+        <button class="btn ghost" id="fcAgain">Review again</button>
+        <button class="btn" id="fcGot">Got it ✓</button>
+      </div>
+      <button class="btn ghost" id="fcNext" aria-label="Next card">Next →</button>
+    </div>
+    <p class="fc-stats" style="text-align:center" id="fcMastery"></p>
+
+    <h3>Misconception Alerts</h3>
+    <p class="lead">Each of these beliefs leaves people exposed to attack. Read why each one is wrong.</p>
+    <div class="misc-grid" id="miscGrid"></div>
+
+    <div class="selfcheck" data-selfcheck="1"></div>
+  </section>
+
+  <!-- ================= SECTION 2: WORKED EXAMPLE ================= -->
+  <section class="panel" id="s2" role="tabpanel" aria-labelledby="t2" hidden>
+    <h2>2. Worked Example, Then Your Turn</h2>
+    <p class="lead"><span class="bloom">Apply</span>Phishing scams are among the hardest attacks to detect. First, watch an expert inspect a suspicious email one clue at a time, with the reasoning shown. Then inspect a different email yourself.</p>
+
+    <div class="scenario"><strong>Real-world scenario:</strong> Late on a Sunday night, a Delta College student gets this email right before finals week.</div>
+    <div class="email" aria-label="Example suspicious email">
+      <div class="bar">
+        <div><b>From:</b> Delta College IT Help Desk &lt;helpdesk@deltacollege-edu.support-login.com&gt;</div>
+        <div><b>Subject:</b> URGENT: Your student email will be DEACTIVATED in 24 hours</div>
+      </div>
+      <div class="body">
+        <p style="margin-top:0">Dear Student,</p>
+        <p>We detected unusual activity on your account. To avoid losing access to your email, Canvas, and financial aid, you must verify your account within 24 hours.</p>
+        <p><span class="fake-link">https://www.deltacollege.edu/verify</span><br><span class="hover">Hover shows: http://deltacollege-edu.support-login.com/verify.php</span></p>
+        <p style="margin-bottom:0">Enter your username, password, and student ID to keep your account active.<br>— IT Security Team</p>
+      </div>
+    </div>
+
+    <div id="workedSteps"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="nextStep">Show next step</button>
+      <button class="btn ghost" id="allSteps">Show all steps</button>
+    </div>
+
+    <h3>Your Turn: The "Package Problem" Email</h3>
+    <div class="scenario"><strong>Scenario:</strong> You've been waiting on an online order, and this email arrives. Use the expert's method. <strong>Check every statement that is a red flag</strong>, leave the others unchecked, and then choose the best action.</div>
+    <div class="email" aria-label="Practice suspicious email">
+      <div class="bar">
+        <div><b>From:</b> Amazon Customer Service &lt;support@amaz0n-orders.co&gt;</div>
+        <div><b>Subject:</b> Problem with order #112-4839 — respond within 12 hours</div>
+      </div>
+      <div class="body">
+        <p style="margin-top:0">Hello Valued Customer,</p>
+        <p>Your payment could not be processed and your package is on hold. Confirm your card number, expiration date, and Social Security number to release your shipment, or the order will be cancelled.</p>
+        <p><span class="fake-link">https://www.amazon.com/your-orders</span><br><span class="hover">Hover shows: https://amaz0n-orders.co/login/confirm</span></p>
+        <span class="attach">📎 Invoice_112-4839.pdf.exe</span>
+      </div>
+    </div>
+    <div class="flag-list" id="flagList"></div>
+    <p style="margin:14px 0 4px"><strong>What's the best action?</strong></p>
+    <div class="opts" id="actionOpts" role="radiogroup" aria-label="Best action"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="checkPhish">Check my answers</button>
+      <button class="btn ghost" id="hintPhish">Hint</button>
+      <button class="btn ghost" id="showPhish">Show solution</button>
+    </div>
+    <div class="feedback" id="phishFb" aria-live="polite"></div>
+
+    <div class="selfcheck" data-selfcheck="2"></div>
+  </section>
+
+  <!-- ================= SECTION 3: QUIZ ================= -->
+  <section class="panel" id="s3" role="tabpanel" aria-labelledby="t3" hidden>
+    <h2>3. Interactive Quiz</h2>
+    <p class="lead">Twelve questions, from easiest to hardest. The early questions check recall; the later ones ask you to apply defenses, analyze attacks, and evaluate security choices. Every answer includes an explanation.</p>
+    <div class="card-box" id="quizBox"></div>
+    <div class="selfcheck" data-selfcheck="3"></div>
+  </section>
+
+  <!-- ================= SECTION 4: MATCHING ================= -->
+  <section class="panel" id="s4" role="tabpanel" aria-labelledby="t4" hidden>
+    <h2>4. Matching Activity</h2>
+    <p class="lead"><span class="bloom">Understand</span>Match each threat or attacker tool on the left to its description on the right.</p>
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <span id="matchStatus" aria-live="polite">Matched 0 of 8 · Mistakes: 0</span>
+      <button class="btn ghost" id="matchReset">Reset and shuffle</button>
+    </div>
+    <div class="match-grid">
+      <div class="match-col" id="matchLeft" aria-label="Terms"></div>
+      <div class="match-col" id="matchRight" aria-label="Descriptions"></div>
+    </div>
+    <div class="feedback" id="matchFb"></div>
+    <div class="selfcheck" data-selfcheck="4"></div>
+  </section>
+
+  <!-- ================= SECTION 5: THINK DEEPER ================= -->
+  <section class="panel" id="s5" role="tabpanel" aria-labelledby="t5" hidden>
+    <h2>5. Think Deeper: Analyze, Evaluate, Create</h2>
+    <p class="lead">These tasks ask you to justify, compare, and produce something original. Commit to your own answer first, then compare it with an expert's response.</p>
+
+    <!-- Task A -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Analyze</span>Task A: What Went Wrong at the Dental Office?</h3>
+      <div class="scenario"><strong>Case:</strong> A small dental office in Lodi was hit by ransomware. Read the timeline, then explain <strong>which failures allowed the attack to succeed</strong>. Connect each failure to one of the <strong>four pillars of Internet security</strong> or to <strong>data backup</strong>, and identify which single change would have done the most to reduce the damage.</div>
+      <ol class="timeline">
+        <li>The office computers hadn't installed Windows updates in eight months; the "remind me later" button was clicked every time.</li>
+        <li>The free antivirus trial on the front-desk PC expired last spring and was never renewed.</li>
+        <li>The receptionist opened an email attachment called <code>Patient_Referral.docm</code> from an unknown sender.</li>
+        <li>The ransomware encrypted every file on the shared office drive and demanded payment.</li>
+        <li>The only backup was an external drive that stayed plugged into the same computer. It was encrypted too.</li>
+      </ol>
+      <textarea id="taA" aria-label="Your analysis for Task A" placeholder="Failure 1 → pillar... because...&#10;Failure 2 → ...&#10;The single most important change would have been... because..."></textarea>
+      <div class="row"><span class="wordcount" id="wcA">0 words (aim for 60+)</span><button class="btn" data-reveal="revA" data-ta="taA" data-min="30">Compare with expert</button></div>
+      <div class="reveal" id="revA"><div class="expert"><strong>Expert analysis:</strong>
+        <ul>
+          <li><strong>Event 1, Pillar 2 (software updates):</strong> eight months of missed patches left known security holes open. Hackers can exploit a newly announced flaw in under 24 hours.</li>
+          <li><strong>Event 2, Pillar 3 (security software):</strong> antivirus works only if it's running <em>and</em> updated. An expired trial gives no protection.</li>
+          <li><strong>Event 3, Pillar 4 (safe, cautious behavior):</strong> never open attachments unless they're expected and scanned. This was the moment of infection, and it's also an <em>interior threat</em> caused by an uninformed user.</li>
+          <li><strong>Event 5, data backup:</strong> the backup stayed connected on-site, so the ransomware reached it too. The reading warns that on-site backups are exposed to the same destructive forces as the originals.</li>
+          <li><strong>Most important single change:</strong> an <em>off-site</em> (cloud) or disconnected backup on an automatic schedule. Prevention can fail, but a separate backup turns a disaster into an inconvenience: wipe the drives and restore. (Pillar 1, a firewall, wouldn't have stopped an attachment the user opened herself.)</li>
+        </ul></div></div>
+    </div>
+
+    <!-- Task B -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Evaluate</span>Task B: Choose the Best Backup Plan</h3>
+      <div class="scenario"><strong>Scenario:</strong> Daniela is a Delta photography student who freelances shooting quinceañeras and weddings. Her laptop holds 2 TB of client photos that can never be reshot. Which backup plan is best? Choose one and defend it against the other two, using ideas from the reading: off-site storage, full and incremental backups, scheduling, encryption, and provider disclaimers.</div>
+      <div class="opts" role="group" aria-label="Choose a backup plan">
+        <button class="opt" data-choiceb="1">Plan 1: Copy everything to an external drive on her desk about once a month, when she remembers</button>
+        <button class="opt" data-choiceb="2">Plan 2: Rely only on a cloud photo app, since "the cloud company backs it up"</button>
+        <button class="opt" data-choiceb="3">Plan 3: An automatic, scheduled incremental backup to an encrypted external drive, plus a continuous backup to an off-site cloud service</button>
+      </div>
+      <textarea id="taB" aria-label="Your justification for Task B" placeholder="I recommend Plan __ because... Plan __ is weaker because... Plan __ is weaker because..."></textarea>
+      <div class="row"><span class="wordcount" id="wcB">0 words (aim for 50+)</span><button class="btn" data-reveal="revB" data-ta="taB" data-min="25">Compare with expert</button></div>
+      <div class="reveal" id="revB"><div class="expert"><strong>Expert evaluation: Plan 3 is clearly best.</strong>
+        <ul>
+          <li><strong>Plan 1:</strong> backups made "when she remembers" are often weeks old, so new client shoots are unprotected. A drive kept on the same desk can be lost in the same fire, flood, theft, or power surge as the laptop.</li>
+          <li><strong>Plan 2:</strong> the reading warns that cloud providers "do not typically ensure against data loss" and that users should keep their own copies for 100 percent assurance. With only one copy, an account lockout or provider error could wipe out everything.</li>
+          <li><strong>Plan 3</strong> gives her <em>two independent copies</em>: a fast local restore, plus an off-site copy that survives a local disaster. <em>Scheduled incremental</em> backups capture each day's new photos without recopying 2 TB, and <em>encryption</em> protects clients' private photos if the drive is stolen.</li>
+          <li><strong>Trade-off:</strong> Plan 3 costs more (a drive plus a monthly fee), but for irreplaceable client work that she's paid for, the cost is easily justified.</li>
+        </ul></div></div>
+    </div>
+
+    <!-- Task C -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Create</span>Task C: Write a Security Plan for a Small Business</h3>
+      <div class="scenario"><strong>Scenario:</strong> Valley Tax Help is a family-run tax-preparation office in Stockton with four employees, five Windows PCs, a Wi-Fi router, and a printer. They store clients' Social Security numbers and bank information. The owner asks you to write a one-page information security plan covering the machine, network, and Internet levels.</div>
+      <textarea class="tall" id="taC" aria-label="Your security plan for Task C" placeholder="MACHINE LEVEL (authentication, encryption, backup):&#10;...&#10;NETWORK LEVEL (permissions, Wi-Fi, usage policy):&#10;...&#10;INTERNET LEVEL (four pillars, phishing training):&#10;...&#10;LEGAL / RESPONSIBILITIES:&#10;..."></textarea>
+      <p><strong>Self-assess your plan against this checklist:</strong></p>
+      <div class="rubric" id="rubricC">
+        <label><input type="checkbox"> Strong authentication: unique strong passwords or a password manager, plus 2-step verification</label>
+        <label><input type="checkbox"> Encryption of stored client data (e.g., BitLocker) and HTTPS for web forms</label>
+        <label><input type="checkbox"> Automatic, scheduled backups with at least one off-site copy</label>
+        <label><input type="checkbox"> Permissions: Standard (not Administrator) accounts for staff; client files shared only with those who need them</label>
+        <label><input type="checkbox"> Secured Wi-Fi: changed router password, WPA2 or newer encryption, separate guest access</label>
+        <label><input type="checkbox"> The four pillars: firewall, automatic updates, antivirus, and safe-behavior or phishing training</label>
+        <label><input type="checkbox"> A network usage policy employees sign, plus a plan to notify clients if data is stolen (as data-breach laws require)</label>
+      </div>
+      <div class="row"><span class="wordcount" id="rubricScore">0 of 7 criteria met</span><button class="btn" data-reveal="revC" data-ta="taC" data-min="50">Show a model plan</button></div>
+      <div class="reveal" id="revC"><div class="expert"><strong>Model plan (one strong possibility):</strong>
+        <ul>
+          <li><strong>Machine level:</strong> each employee gets a unique login with a strong password stored in a password manager. Turn on 2-step verification for email and tax software. Encrypt every PC's drive with BitLocker so a stolen laptop exposes nothing. Lock screens automatically after 5 minutes.</li>
+          <li><strong>Backup:</strong> nightly automatic incremental backups to an encrypted cloud service (off-site), with a weekly full backup to an external drive kept in a locked cabinet and disconnected between backups so ransomware can't reach it.</li>
+          <li><strong>Network level:</strong> employees use Standard accounts, and only the owner has Administrator rights, so malware can't easily install itself. The client-files folder gives read and write access only to preparers. Change the router's default password, use WPA2 or newer encryption, and put clients in the waiting room on a separate guest network.</li>
+          <li><strong>Internet level:</strong> enable the Windows firewall and the router's firewall, set Windows and browsers to update automatically, and run a security suite that updates itself. Train staff twice a year on phishing: never click email links, type addresses directly, and don't open unexpected attachments.</li>
+          <li><strong>Policy and law:</strong> every employee signs a network usage policy (no personal software, no USB drives, shred printed SSNs). Keep a written plan to notify clients if their data is ever stolen, as identity-theft and breach-notification laws require.</li>
+        </ul></div></div>
+    </div>
+
+    <div class="selfcheck" data-selfcheck="5"></div>
+  </section>
+</main>
+
+<footer>CS11 Introduction to Computing &amp; Information Technology · San Joaquin Delta College · Module 16: Information Security</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const fmt = s => esc(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\b_([^_]+)_\b/g, "<em>$1</em>");
+  const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const words = t => (t.trim().match(/\S+/g) || []).length;
+
+  /* ---------- progress ---------- */
+  const completed = new Set();
+  function markDone(n) {
+    if (completed.has(n)) return;
+    completed.add(n);
+    $("#t" + n).classList.add("done");
+    $("#progBar").style.width = (completed.size / 5 * 100) + "%";
+    $(".progress").setAttribute("aria-valuenow", completed.size);
+    $("#progText").textContent = completed.size + " of 5 sections";
+  }
+
+  /* ---------- tabs ---------- */
+  const tabs = $$('[role="tab"]');
+  function openTab(tab) {
+    tabs.forEach(t => {
+      const sel = t === tab;
+      t.setAttribute("aria-selected", sel); t.tabIndex = sel ? 0 : -1;
+      const p = $("#" + t.getAttribute("aria-controls")); p.hidden = !sel; p.classList.toggle("active", sel);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => openTab(t));
+    t.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); openTab(n);
+      }
+    });
+  });
+
+  /* ---------- 1. FLASHCARDS ---------- */
+  const cards = [
+    // Remember
+    { l: "Remember", s: "16.1", f: "What is **information security**?", b: "Protecting computers and other digital devices, information systems, data, and information against **unauthorized access, use, manipulation, or destruction**." },
+    { l: "Remember", s: "16.1", f: "Name the **three forms of authentication**.", b: "**Something you know** (password, PIN), **something you have** (phone, ID card, key fob, token), and **something about you** (fingerprint, face, retina: biometrics)." },
+    { l: "Remember", s: "16.1", f: "What is **encryption**?", b: "A technique that uses high-level math functions and algorithms to **encode data** so it's unintelligible to everyone except the sender and the intended recipient." },
+    { l: "Remember", s: "16.1", f: "**Full backup** vs. **incremental backup**?", b: "A **full** backup copies all selected files. An **incremental** backup copies only the files that **changed since the last backup**." },
+    { l: "Remember", s: "16.2", f: "What are the three types of **file permissions**?", b: "**Read**, **write**, and **execute**. Execute applies to programs and folders; data files use read and write." },
+    { l: "Remember", s: "16.2", f: "What is a **network usage policy**?", b: "A document or agreement defining **acceptable and unacceptable uses** of an organization's computers and network. Users often must agree to it before getting an account." },
+    { l: "Remember", s: "16.3", f: "What are the **four pillars of Internet security**?", b: "1. Use a **firewall** · 2. Install **software updates** · 3. Use **security (antivirus) software** · 4. Practice **safe, cautious online behavior**" },
+    { l: "Remember", s: "16.3", f: "What is a **firewall**?", b: "Hardware or software that **examines data packets** flowing into (and sometimes out of) a network or computer and filters out potentially dangerous ones." },
+    { l: "Remember", s: "16.3", f: "What is **malware**? Name the three most common types.", b: "\"Malicious software\" designed to damage, corrupt, or illegally manipulate computer resources. Most common: **viruses, worms, and spyware**." },
+    { l: "Remember", s: "16.3", f: "What is a **phishing scam**?", b: "A scam that combines a **spoofed email** with a **spoofed website** to trick a person into giving up private information, such as logins, that can be used for identity theft." },
+    { l: "Remember", s: "16.3", f: "What is a **digital certificate**?", b: "An electronic \"business card\" (SSL certificate) from a certification authority that **verifies the sender** of Internet data. It contains the owner's name, a serial number, an expiration date, and a public key." },
+    { l: "Remember", s: "16.3", f: "Name five **types of hackers**.", b: "**Black-hat** (unlawful, unethical), **white-hat** (exposes flaws so they can be fixed), **gray-hat** (questionable ethics), **script kiddie** (little skill, follows others' instructions), and **hacktivist** (hacks for a social cause)." },
+    // Understand
+    { l: "Understand", s: "16.1", f: "Why is a password alone considered **weak** authentication?", b: "Passwords can be **guessed or stolen** and used without your knowledge. Combining a password with \"something you have\" (like a code sent to your phone in **2-step verification**) is much stronger." },
+    { l: "Understand", s: "16.1", f: "What makes a password **strong**? Compare `johnnyb`, `92Tpo5#cCw`, and `nyKOOLB@Y`.", b: "`johnnyb` is weak (easy to guess). `92Tpo5#cCw` is strong but hard to remember. `nyKOOLB@Y` is **strong and memorable**, which is ideal. Also use **different passwords for different accounts**." },
+    { l: "Understand", s: "16.1", f: "Why should backups be stored **off-site**?", b: "On-site backups can be destroyed by the **same fire, flood, theft, or power surge** that destroys the original. An off-site or cloud copy survives a local disaster." },
+    { l: "Understand", s: "16.2", f: "Interior threats can be **unintentional** or **intentional**. Give an example of each.", b: "**Unintentional:** a typing error, an infected USB drive, or a password written on a sticky note. **Intentional:** a disgruntled employee planting a software time bomb, or an employee bribed to sell data." },
+    { l: "Understand", s: "16.2", f: "Why are **wireless networks** more vulnerable than wired ones?", b: "An attacker doesn't need a physical connection. Anyone within signal range (a neighbor, a car outside, a **war driver**) can try to connect or capture the data being sent." },
+    { l: "Understand", s: "16.3", f: "**Virus** vs. **worm** vs. **spyware**: what's the difference?", b: "A **virus** attaches to files and spreads, delivering a payload. A **worm** is a free agent that replicates itself without a host file. **Spyware** secretly monitors or controls a computer and does **not** self-replicate." },
+    { l: "Understand", s: "16.3", f: "Why do some firewalls check **outgoing** packets too?", b: "To stop **zombie computers** (infected machines in a botnet) from carrying out a hacker's commands, such as sending spam or attacking other computers." },
+    { l: "Understand", s: "16.3", f: "Why should you install software updates **right away**?", b: "Once a security hole is announced, hackers can build an exploit in **under 24 hours**, so it's a race between users patching and attackers exploiting the flaw." },
+    { l: "Understand", s: "16.3", f: "How does **pharming** differ from phishing?", b: "Phishing tricks you into **clicking a fake link**. Pharming **hijacks a DNS server**, so even typing the correct address takes you to a fake site, which makes it nearly impossible to detect." },
+    // Apply
+    { l: "Apply", s: "16.1", f: "You unlock your phone with your face. Which form of authentication is this?", b: "**Something about you**: biometrics using facial pattern recognition." },
+    { l: "Apply", s: "16.2", f: "A webpage file should be viewable by everyone, but only its owner may change it. Which permissions should be set?", b: "**Owner:** read, write, and execute. **Group and World:** **read only**. Web files are set so the world can read but not write." },
+    { l: "Apply", s: "16.2", f: "List three steps to secure a **home Wi-Fi** router.", b: "Change the **default router password**, turn on **WPA2 (or newer) encryption**, allow only approved devices' **MAC addresses**, and stop **broadcasting the SSID**. (Many routers now also offer **WPA3**, the newer standard.)" },
+    { l: "Apply", s: "16.3", f: "A pop-up says, \"Your computer is infected! Download our scanner now.\" What should you do?", b: "**Close it and don't download anything.** Fake infection warnings are a common trick to install malware. Use your own trusted, already-installed antivirus software instead." },
+    { l: "Apply", s: "16.3", f: "Your files are suddenly encrypted, and a message demands $300 to unlock them. What is this, and what saves you?", b: "**Ransomware**. A recent, separate (ideally **off-site**) **backup** lets you wipe the infection and restore your files without paying." },
+    { l: "Apply", s: "16.3", f: "A hospital accidentally leaves patient records exposed online. Which law requires the health industry to protect that privacy?", b: "**HIPAA** (Health Insurance Portability and Accountability Act of 1996)." }
+  ];
+  const lessonName = { "16.1": "Lesson 16.1", "16.2": "Lesson 16.2", "16.3": "Lesson 16.3" };
+  let level = "All", lesson = "All", reviewOnly = false, deck = cards.map((c, i) => i), pos = 0;
+  const status = cards.map(() => "new");
+  const filtered = () => deck.filter(i => (level === "All" || cards[i].l === level) && (lesson === "All" || cards[i].s === lesson) && (!reviewOnly || status[i] === "again"));
+  function renderCard() {
+    const list = filtered();
+    $("#flash").classList.remove("flipped");
+    if (!list.length) {
+      $("#fcFront").innerHTML = reviewOnly ? "Your review pile is empty. Nice work!" : "No cards match these filters.";
+      $("#fcBack").innerHTML = ""; $("#fcTagF").innerHTML = $("#fcTagB").innerHTML = ""; $("#fcCount").textContent = "0 cards";
+    } else {
+      if (pos >= list.length) pos = 0;
+      const c = cards[list[pos]];
+      const tag = `<span class="bloom">${c.l}</span><span class="lesson-tag">${lessonName[c.s]}</span>`;
+      $("#fcTagF").innerHTML = tag; $("#fcTagB").innerHTML = tag;
+      $("#fcFront").innerHTML = fmt(c.f); $("#fcBack").innerHTML = fmt(c.b);
+      $("#fcCount").textContent = `Card ${pos + 1} of ${list.length}`;
+    }
+    const got = status.filter(s => s === "got").length, again = status.filter(s => s === "again").length;
+    $("#fcMastery").textContent = `Mastered: ${got} / ${cards.length} · Review pile: ${again}`;
+  }
+  const flipCard = () => { if (filtered().length) $("#flash").classList.toggle("flipped"); };
+  $("#flash").addEventListener("click", flipCard);
+  $("#fcNext").addEventListener("click", () => { pos = (pos + 1) % Math.max(filtered().length, 1); renderCard(); });
+  $("#fcPrev").addEventListener("click", () => { const n = Math.max(filtered().length, 1); pos = (pos - 1 + n) % n; renderCard(); });
+  function rate(s) { const list = filtered(); if (!list.length) return; status[list[pos]] = s; if (!(reviewOnly && s === "got")) pos++; renderCard(); }
+  $("#fcGot").addEventListener("click", () => rate("got"));
+  $("#fcAgain").addEventListener("click", () => rate("again"));
+  $("#fcShuffle").addEventListener("click", () => { deck = shuffle(deck); pos = 0; renderCard(); });
+  $$(".chip[data-level]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-level]").forEach(c => c.setAttribute("aria-pressed", c === ch)); level = ch.dataset.level; pos = 0; renderCard(); }));
+  $$(".chip[data-lesson]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-lesson]").forEach(c => c.setAttribute("aria-pressed", c === ch)); lesson = ch.dataset.lesson; pos = 0; renderCard(); }));
+  $("#fcReviewOnly").addEventListener("click", e => { reviewOnly = !reviewOnly; e.currentTarget.setAttribute("aria-pressed", reviewOnly); pos = 0; renderCard(); });
+  document.addEventListener("keydown", e => {
+    if ($("#s1").hidden || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (e.key === "ArrowRight") $("#fcNext").click();
+    else if (e.key === "ArrowLeft") $("#fcPrev").click();
+    else if (e.key === " " && document.activeElement.tagName !== "BUTTON") { e.preventDefault(); flipCard(); }
+  });
+
+  /* ---------- misconceptions ---------- */
+  const misconceptions = [
+    { m: "\"If a site shows https:// and a lock icon, it's safe and legitimate.\"", w: "HTTPS means the connection is **encrypted**, so outsiders can't read your data in transit. It doesn't prove who you're talking to: a scammer can get a certificate for a look-alike address such as `amaz0n-orders.co`.", r: "Check for HTTPS **and** read the domain name carefully. Better yet, **type the address yourself** instead of clicking email links." },
+    { m: "\"Macs don't get viruses, so I don't need antivirus.\"", w: "The reading states that virus protection is \"a necessity on all types of PCs: **Windows and Macs**.\" Phones are targets too, especially through malicious apps.", r: "Run antivirus software that is **always on and automatically updated** on every device." },
+    { m: "\"My files are in the cloud, so they're automatically backed up and safe.\"", w: "Cloud providers' disclaimers say they **do not typically ensure against data loss**. Accounts can also be hacked or locked, and ransomware can sync encrypted files to the cloud.", r: "Ultimately, **you** are responsible. Keep your own additional backup copies of anything important." },
+    { m: "\"A virus can destroy my computer's hardware.\"", w: "According to the reading, viruses **do not harm computer hardware** or force you to buy a new computer. They damage **data and software**.", r: "Recovery means wiping the drive, reinstalling the OS and software, and **restoring data from backup**, which is another reason backups matter." },
+    { m: "\"Hackers target big companies, not ordinary people like me.\"", w: "Automated tools probe Internet-connected computers **continuously**. An unprotected PC can be attacked within **minutes**, and ordinary PCs are recruited as zombies into botnets.", r: "Every user is \"at the heart of information security.\" Apply the **four pillars** on your own devices." }
+  ];
+  $("#miscGrid").innerHTML = misconceptions.map((x, i) => `
+    <article class="misc"><h4>⚠ Misconception ${i + 1}</h4>
+      <p><span class="label">Belief:</span> ${fmt(x.m)}</p>
+      <p><span class="label">Why it's wrong:</span> ${fmt(x.w)}</p>
+      <p style="margin-bottom:0"><span class="label">Correct reasoning:</span> ${fmt(x.r)}</p></article>`).join("");
+
+  /* ---------- 2. WORKED EXAMPLE ---------- */
+  const steps = [
+    { h: "Step 1 · Check the sender's real address", t: "The display name says \"Delta College IT Help Desk,\" but the address is `helpdesk@deltacollege-edu.support-login.com`. The actual domain is **support-login.com**; \"deltacollege-edu\" is just a word in front of it.",
+      why: "Display names are easy to fake (**spoofing**). Read the domain right before the last part of the address. A real Delta email would come from `deltacollege.edu`." },
+    { h: "Step 2 · Notice the pressure and the generic greeting", t: "\"URGENT,\" \"DEACTIVATED in 24 hours,\" threats to financial aid, and \"Dear Student\" instead of your name.",
+      why: "Scammers create **fear and urgency** so you act before you think. A mass email sent by a botnet can't use your name. (Watch out, though: **spear phishing** uses personal details to look even more convincing.)" },
+    { h: "Step 3 · Hover over the link before clicking", t: "The link text shows `https://www.deltacollege.edu/verify`, but hovering reveals that it really goes to `http://deltacollege-edu.support-login.com/verify.php`.",
+      why: "The text you see and the real destination can be different. This **mismatch** is the classic phishing setup, and the real destination isn't even HTTPS." },
+    { h: "Step 4 · Ask what it wants from you", t: "It asks for your **username, password, and student ID**.",
+      why: "Legitimate IT departments **never** ask for your password by email. Requests for credentials are the core goal of phishing, and they lead to identity theft." },
+    { h: "Step 5 · Choose the right action", t: "**Don't click, don't reply.** Report the message to Delta's IT help desk, then delete it. If you're worried about your account, **type the college's address yourself** or call IT using the number on the official website.",
+      why: "The reading's advice: avoid clicking links in emails and type URLs directly into your browser. Reporting the email helps protect other students who received it." },
+    { h: "Verdict · Phishing (with signs of spoofing)", t: "Five independent red flags: a fake sender domain, manufactured urgency, a generic greeting, a link mismatch, and a request for credentials.",
+      why: "No single clue is proof, but **several red flags together** make the verdict clear. The same method works for texts and social media messages." }
+  ];
+  let shown = 0;
+  $("#workedSteps").innerHTML = steps.map((s, i) => `<div class="step hidden" id="ws${i}"><h4>${esc(s.h)}</h4><p style="margin:4px 0">${fmt(s.t)}</p><div class="why"><strong>Reasoning:</strong> ${fmt(s.why)}</div></div>`).join("");
+  function showStep() {
+    if (shown < steps.length) { $("#ws" + shown).classList.remove("hidden"); shown++; }
+    if (shown === steps.length) { $("#nextStep").disabled = true; $("#nextStep").textContent = "All steps shown"; }
+  }
+  showStep();
+  $("#nextStep").addEventListener("click", showStep);
+  $("#allSteps").addEventListener("click", () => { while (shown < steps.length) showStep(); });
+
+  const flags = [
+    ["The sender's domain is `amaz0n-orders.co` (a zero instead of the letter o).", true, "A look-alike domain is a classic spoofing trick."],
+    ["The email says you must respond within 12 hours.", true, "Artificial urgency pushes you to act without thinking."],
+    ["It greets you as \"Valued Customer\" instead of by name.", true, "A generic greeting suggests a mass email."],
+    ["The link text and the real destination (shown on hover) don't match.", true, "That mismatch is the classic phishing setup."],
+    ["It asks for your Social Security number to release a package.", true, "Stores never need your SSN to ship an order. Requests for an SSN are a hallmark of identity theft."],
+    ["The attachment is named `Invoice_112-4839.pdf.exe`.", true, "The real extension is `.exe`, a program disguised as a PDF. Running it would install malware (a Trojan)."],
+    ["The real destination begins with `https://`.", false, "Not a red flag, but not reassuring either: HTTPS only means encryption, and scam sites can use it too (see Misconception 1)."],
+    ["You really are waiting for an online order.", false, "This isn't a red flag about the email. It's simply why the scam feels believable, and scammers count on it."]
+  ];
+  $("#flagList").innerHTML = flags.map((f, i) => `<label data-i="${i}"><input type="checkbox" aria-label="Red flag ${i + 1}"><span>${fmt(f[0])}<span class="why-note" style="display:none;font-size:.9rem;color:var(--muted)"><br>${fmt(f[2])}</span></span></label>`).join("");
+  const actions = [
+    ["Click the link and update your card details quickly so your package isn't cancelled", false],
+    ["Reply to the email to ask whether it's real", false],
+    ["Don't click or open anything. Check your orders by typing amazon.com yourself or opening the official app, then report the email as phishing and delete it", true],
+    ["Open the invoice attachment first to see which order it's about", false]
+  ];
+  $("#actionOpts").innerHTML = shuffle(actions.map((a, i) => i)).map(i => `<button class="opt" role="radio" aria-checked="false" data-a="${i}">${esc(actions[i][0])}</button>`).join("");
+  let pickedAction = null;
+  $$("#actionOpts .opt").forEach(b => b.addEventListener("click", () => { $$("#actionOpts .opt").forEach(x => { x.classList.remove("picked"); x.setAttribute("aria-checked", "false"); }); b.classList.add("picked"); b.setAttribute("aria-checked", "true"); pickedAction = +b.dataset.a; }));
+  function gradePhish(reveal) {
+    let right = 0;
+    $$("#flagList label").forEach(l => {
+      const i = +l.dataset.i, cb = $("input", l);
+      if (reveal) cb.checked = flags[i][1];
+      const ok = cb.checked === flags[i][1];
+      l.classList.toggle("okl", ok); l.classList.toggle("nol", !ok); if (ok) right++;
+      $(".why-note", l).style.display = "inline";
+    });
+    if (reveal) { $$("#actionOpts .opt").forEach(b => { if (actions[+b.dataset.a][1]) { b.classList.add("correct"); pickedAction = +b.dataset.a; } }); }
+    const actOk = pickedAction !== null && actions[pickedAction][1];
+    $$("#actionOpts .opt").forEach(b => { b.classList.remove("wrong"); if (+b.dataset.a === pickedAction && !actOk) b.classList.add("wrong"); if (actions[+b.dataset.a][1] && (actOk || reveal)) b.classList.add("correct"); });
+    const fb = $("#phishFb"), all = right === flags.length && actOk;
+    fb.className = "feedback show " + (all ? "good" : "bad");
+    fb.textContent = reveal ? "Solution shown: 6 real red flags, 2 statements that aren't red flags, and the safe action. Read the note under each statement."
+      : all ? "Excellent! You found all 6 red flags, correctly left the 2 non-flags unchecked, and chose the safe action. Notice that HTTPS alone didn't make the site trustworthy."
+      : `${right} of ${flags.length} statements classified correctly${actOk ? ", and you chose the right action" : pickedAction === null ? "; you haven't chosen an action yet" : ", but your action isn't the safest choice"}. Read the notes under each statement, then compare them with Steps 1–5.`;
+  }
+  $("#checkPhish").addEventListener("click", () => gradePhish(false));
+  $("#showPhish").addEventListener("click", () => gradePhish(true));
+  $("#hintPhish").addEventListener("click", () => { const fb = $("#phishFb"); fb.className = "feedback show good"; fb.textContent = "Hint: use the expert's five checks: sender domain, urgency or greeting, link hover, what it asks for, and attachments. Be careful: one statement describes something many people mistakenly trust."; });
+
+  /* ---------- 3. QUIZ ---------- */
+  const quiz = [
+    { b: "Remember", q: "A fingerprint scan is an example of which form of authentication?", o: ["Something you know", "Something you have", "Something about you", "Something you share"], a: 2, e: "Biometrics, such as fingerprints, faces, and retinas, are \"something about you.\"" },
+    { b: "Remember", q: "Which list shows the **four pillars** of Internet security?", o: ["Firewall, software updates, security software, safe online behavior", "Passwords, biometrics, tokens, encryption", "Backup, RAID, mirroring, cloud storage", "Read, write, execute, share"], a: 0, e: "Use a firewall, install updates, use security software, and practice safe, cautious behavior." },
+    { b: "Remember", q: "Which type of malware replicates itself across computers **without attaching to other files**?", o: ["Virus", "Worm", "Spyware", "Trojan horse"], a: 1, e: "A worm is a free agent. Slammer attacked more than 75,000 computers in 10 minutes. A virus needs a host file." },
+    { b: "Understand", q: "Why is **2-step verification** stronger than a password alone?", o: ["It uses a longer password", "It combines something you know with something you have, such as a code sent to your phone", "It encrypts the hard drive", "It blocks all hackers permanently"], a: 1, e: "An attacker who steals your password still needs your phone. Two different forms of authentication are much harder to defeat." },
+    { b: "Understand", q: "What does HTTPS actually guarantee?", o: ["The website is run by an honest business", "The connection encrypts the data you submit, such as passwords and card numbers", "The site has no malware", "The site is a .gov or .edu domain"], a: 1, e: "HTTPS encrypts data in transit. It doesn't prove the business is legitimate, because phishing sites can use HTTPS too." },
+    { b: "Understand", q: "Why does the reading say you should keep backups **off-site**?", o: ["Off-site backups are faster", "On-site backups can be destroyed by the same fire, flood, or power surge as the original", "The law requires it", "Off-site backups don't need encryption"], a: 1, e: "Storing a backup in a different place is what protects it from a local disaster." },
+    { b: "Apply", q: "A campus employee needs to use a shared office PC but must not be able to install software or change settings. Which Windows account type fits best?", o: ["Administrator", "Standard", "Guest", "Root"], a: 1, e: "A Standard account can use the computer but can only change its own password and icon. Administrator is full access; Guest is for temporary users without a permanent account." },
+    { b: "Apply", q: "You type `www.mybank.com` correctly, but you still land on a fake look-alike site because a DNS server was hijacked. What is this attack?", o: ["Phishing", "Pharming", "War driving", "Spear phishing"], a: 1, e: "Pharming corrupts DNS so that even correctly typed addresses are redirected. Phishing depends on you clicking a fake link." },
+    { b: "Apply", q: "Thousands of infected computers flood a college's registration website at once, so real students can't connect. What is this?", o: ["A distributed denial-of-service (DDoS) attack by a botnet", "A software update", "A key-logging attack", "Data mirroring"], a: 0, e: "Botnets of zombie computers overwhelm a server with requests, which is a DDoS attack." },
+    { b: "Analyze", q: "An employee who expects to be laid off plants code that will delete the payroll database a month after he leaves. How should this be classified?", o: ["An exterior threat from a black-hat hacker", "An intentional interior threat (a software time bomb)", "An unintentional data-entry error", "Spyware from a drive-by download"], a: 1, e: "He's a registered user inside the network acting on purpose. Disgruntled employees creating time bombs is a classic intentional interior threat." },
+    { b: "Evaluate", q: "A coffee shop offers free, open Wi-Fi with no password. Which practice is **most important** for a student using it?", o: ["Turning Bluetooth to discoverable so friends can connect", "Avoiding entering passwords or card numbers, and turning off auto-connect to unknown networks", "Disabling the firewall to improve speed", "Using the same password everywhere so it's easy to remember"], a: 1, e: "Data on open Wi-Fi can be intercepted, and a hacker may even run a fake \"free Wi-Fi\" network. Keep private information off public networks." },
+    { b: "Evaluate", q: "A small business can afford only **one** improvement this month. Its staff click on everything, its computers are fully updated, and the firewall is on. Which investment best addresses its biggest risk?", o: ["A second hardware firewall", "Phishing and safe-behavior training for employees", "Faster computers", "A larger monitor for the administrator"], a: 1, e: "The weakest pillar here is behavior. Since the firewall and updates are already in place, training users addresses the actual gap. Security is only as strong as its weakest pillar." }
+  ];
+  let qi = 0, qScore = 0; const qRes = [];
+  function renderQ() {
+    const box = $("#quizBox");
+    if (qi >= quiz.length) {
+      const pct = Math.round(qScore / quiz.length * 100);
+      const msg = pct >= 85 ? "Excellent. You've mastered Module 16's key ideas." : pct >= 65 ? "Good progress. Review the explanations for the questions you missed, then retake the quiz." : "Revisit the flashcards and the worked example, then try again.";
+      box.innerHTML = `<div style="text-align:center"><div class="score-big">${qScore} / ${quiz.length}</div><p>${pct}% · ${msg}</p><div class="dots" style="justify-content:center">${qRes.map(r => `<span class="${r ? "r" : "w"}"></span>`).join("")}</div><button class="btn" id="qRetry">Retake quiz</button></div>`;
+      $("#qRetry").addEventListener("click", () => { qi = 0; qScore = 0; qRes.length = 0; renderQ(); });
+      return;
+    }
+    const q = quiz[qi], high = /Analyze|Evaluate/.test(q.b);
+    box.innerHTML = `
+      <div class="q-meta"><span>Question ${qi + 1} of ${quiz.length}</span><span>Score: ${qScore}</span></div>
+      <div class="dots" aria-hidden="true">${quiz.map((_, k) => `<span class="${k < qRes.length ? (qRes[k] ? "r" : "w") : ""}${k === qi ? " cur" : ""}"></span>`).join("")}</div>
+      <p class="q-text"><span class="bloom${high ? " high" : ""}">${q.b}</span>${fmt(q.q)}</p>
+      <div class="opts" role="group" aria-label="Answer choices">${shuffle(q.o.map((_, k) => k)).map((k, p) => `<button class="opt" data-k="${k}">${String.fromCharCode(65 + p)}. ${fmt(q.o[k])}</button>`).join("")}</div>
+      <div class="feedback" id="qFb" aria-live="polite"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="qNext" hidden>${qi === quiz.length - 1 ? "See results" : "Next question →"}</button></div>`;
+    $$(".opt", box).forEach(btn => btn.addEventListener("click", () => {
+      const ok = +btn.dataset.k === q.a;
+      $$(".opt", box).forEach(b => { b.disabled = true; if (+b.dataset.k === q.a) b.classList.add("correct"); });
+      if (!ok) btn.classList.add("wrong");
+      if (ok) qScore++; qRes.push(ok);
+      const fb = $("#qFb"); fb.className = "feedback show " + (ok ? "good" : "bad");
+      fb.innerHTML = (ok ? "<strong>Correct.</strong> " : "<strong>Not quite.</strong> ") + fmt(q.e);
+      const nx = $("#qNext"); nx.hidden = false; nx.focus();
+      nx.addEventListener("click", () => { qi++; renderQ(); });
+    }));
+  }
+  renderQ();
+
+  /* ---------- 4. MATCHING ---------- */
+  const pairs = [
+    ["Virus", "Attaches to files, spreads to other files, and delivers a destructive payload"],
+    ["Trojan horse", "Looks like a harmless program but secretly installs harmful software"],
+    ["Ransomware", "Encrypts your data and holds it captive until a ransom is paid"],
+    ["Spyware", "Secretly monitors or controls a computer and does not self-replicate"],
+    ["Botnet", "A network of zombie computers synchronized to send spam or launch DDoS attacks"],
+    ["Key-logging software", "Records every keystroke to steal usernames and passwords"],
+    ["Social engineering", "Manipulating people, for example by posing as a system administrator, to get private information"],
+    ["War driving", "Driving through neighborhoods searching for unsecured Wi-Fi networks"]
+  ];
+  let selL = null, selR = null, matched = 0, mistakes = 0;
+  function buildMatch() {
+    matched = 0; mistakes = 0; selL = selR = null;
+    $("#matchLeft").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item term" data-i="${i}" data-side="L">${esc(pairs[i][0])}</button>`).join("");
+    $("#matchRight").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item" data-i="${i}" data-side="R">${esc(pairs[i][1])}</button>`).join("");
+    $("#matchFb").className = "feedback"; updMatch();
+    $$(".m-item").forEach(b => b.addEventListener("click", () => pick(b)));
+  }
+  const updMatch = () => { $("#matchStatus").textContent = `Matched ${matched} of ${pairs.length} · Mistakes: ${mistakes}`; };
+  function pick(b) {
+    if (b.classList.contains("matched")) return;
+    const side = b.dataset.side;
+    $$(`.m-item[data-side="${side}"]`).forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel");
+    if (side === "L") selL = b; else selR = b;
+    if (selL && selR) {
+      if (selL.dataset.i === selR.dataset.i) {
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("matched"); x.setAttribute("aria-disabled", "true"); });
+        matched++;
+      } else {
+        mistakes++;
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("shake"); setTimeout(() => x.classList.remove("shake"), 400); });
+      }
+      selL = selR = null; updMatch();
+      if (matched === pairs.length) {
+        const fb = $("#matchFb"); fb.className = "feedback show good";
+        fb.textContent = mistakes === 0 ? "Perfect: all 8 matched with no mistakes!" : `All matched with ${mistakes} mistake(s). Reset and try for a perfect round.`;
+      }
+    }
+  }
+  $("#matchReset").addEventListener("click", buildMatch);
+  buildMatch();
+
+  /* ---------- 5. THINK DEEPER ---------- */
+  [["taA", "wcA", 60], ["taB", "wcB", 50]].forEach(([ta, wc, goal]) => {
+    $("#" + ta).addEventListener("input", e => { $("#" + wc).textContent = `${words(e.target.value)} words (aim for ${goal}+)`; });
+  });
+  $$("[data-choiceb]").forEach(b => b.addEventListener("click", () => { $$("[data-choiceb]").forEach(x => x.classList.remove("picked")); b.classList.add("picked"); }));
+  $$("#rubricC input").forEach(cb => cb.addEventListener("change", () => { $("#rubricScore").textContent = `${$$("#rubricC input:checked").length} of 7 criteria met`; }));
+  $$("[data-reveal]").forEach(btn => btn.addEventListener("click", () => {
+    const ta = $("#" + btn.dataset.ta), min = +btn.dataset.min;
+    if (words(ta.value) < min) {
+      ta.focus(); ta.style.borderColor = "var(--user-accent)";
+      ta.setAttribute("placeholder", `Write your own answer first (at least ${min} words). Committing to an answer before you see the expert's is how you learn.`);
+      return;
+    }
+    ta.style.borderColor = ""; $("#" + btn.dataset.reveal).classList.add("show");
+  }));
+
+  /* ---------- SELF-CHECKS ---------- */
+  const selfChecks = {
+    1: [
+      { q: "A smart card that you tap on a reader to enter a building is…", o: ["Something you know", "Something you have", "Something about you"], a: 1, e: "Cards, tokens, and key fobs are \"something you have.\"" },
+      { q: "Which security tool encodes data so that a thief who steals your laptop can't read it?", o: ["Encryption (e.g., BitLocker or FileVault)", "A firewall", "Incremental backup"], a: 0, e: "Drive encryption protects data even if the device itself is stolen." }
+    ],
+    2: [
+      { q: "An email's link text says `https://www.paypal.com`, but hovering shows a different address. What does that mismatch suggest?", o: ["A normal redirect", "Phishing", "A software update"], a: 1, e: "Link text and the real destination can differ, which is the classic phishing setup." },
+      { q: "What's the safest way to check on an account after a suspicious email?", o: ["Click the email's link but don't log in", "Type the official web address yourself or use the official app", "Reply to the sender"], a: 1, e: "Typing the URL yourself bypasses the scammer's link entirely." }
+    ],
+    3: [
+      { q: "How quickly can hackers build an exploit after a security hole is announced?", o: ["Less than 24 hours", "About 6 months", "Several years"], a: 0, e: "That's why automatic updates matter: it's a race." },
+      { q: "Which law requires banks to tell customers how they share customer information?", o: ["HIPAA", "Gramm-Leach-Bliley Act (GLBA)", "Sarbanes-Oxley"], a: 1, e: "GLBA (1999) covers financial institutions. HIPAA covers health information; Sarbanes-Oxley covers corporate financial reporting." }
+    ],
+    4: [
+      { q: "A free game app that secretly installs a backdoor on your phone is a…", o: ["Worm", "Trojan horse", "Firewall"], a: 1, e: "It looks harmless but installs harmful software. Trojans are common on Android app sources." },
+      { q: "Someone digs through an office's trash to find account numbers. This is a form of…", o: ["Social engineering (dumpster diving)", "Packet sniffing", "Port scanning"], a: 0, e: "Dumpster diving is a low-tech social engineering technique. Shred documents to prevent it." }
+    ],
+    5: [
+      { q: "In Task A, why didn't the external drive save the dental office's data?", o: ["It stayed connected on-site, so the ransomware encrypted it too", "External drives can't store documents", "It had too much storage"], a: 0, e: "A backup has to be separate (off-site or disconnected) to survive the same attack." },
+      { q: "In a business, why give employees Standard instead of Administrator accounts?", o: ["To limit what malware or mistakes can change on the system", "To make computers faster", "Because Standard accounts can't use the Internet"], a: 0, e: "Fewer privileges mean less damage from interior threats and from malware running under that account." }
+    ]
+  };
+  const confAdvice = { 1: "Revisit this section before moving on: reread the flashcards or steps you weren't sure about.", 2: "Good. Review any item you missed, then continue.", 3: "Great! You're ready for the next section." };
+  $$("[data-selfcheck]").forEach(box => {
+    const n = box.dataset.selfcheck, items = selfChecks[n]; let answered = 0;
+    box.innerHTML = `<h3>✔ Self-Check: Section ${n}</h3><p class="lead" style="margin-bottom:8px">Two quick questions to check your understanding before you move on.</p>` +
+      items.map((it, j) => `<div class="sc-item" data-j="${j}"><p style="margin:10px 0 4px"><strong>${j + 1}.</strong> ${fmt(it.q)}</p><div class="opts">${shuffle(it.o.map((_, k) => k)).map(k => `<button class="opt" data-k="${k}">${fmt(it.o[k])}</button>`).join("")}</div><div class="feedback"></div></div>`).join("") +
+      `<div class="confidence"><strong>How confident do you feel?</strong><br><button class="btn ghost" data-c="1">Not yet</button><button class="btn ghost" data-c="2">Getting there</button><button class="btn ghost" data-c="3">Confident</button><div class="feedback"></div></div>` +
+      (n < 5 ? `<div class="row" style="margin-top:12px"><button class="btn accent" data-go="${+n + 1}">Continue to Section ${+n + 1} →</button></div>` : "");
+    $$(".sc-item", box).forEach(item => {
+      const it = items[item.dataset.j];
+      $$(".opt", item).forEach(b => b.addEventListener("click", () => {
+        const ok = +b.dataset.k === it.a;
+        $$(".opt", item).forEach(x => { x.disabled = true; if (+x.dataset.k === it.a) x.classList.add("correct"); });
+        if (!ok) b.classList.add("wrong");
+        const fb = $(".feedback", item); fb.className = "feedback show " + (ok ? "good" : "bad"); fb.innerHTML = (ok ? "✓ " : "✗ ") + fmt(it.e);
+        if (++answered === items.length) markDone(+n);
+      }));
+    });
+    $$("[data-c]", box).forEach(b => b.addEventListener("click", () => { const fb = $(".confidence .feedback", box); fb.className = "feedback show " + (b.dataset.c === "1" ? "bad" : "good"); fb.textContent = confAdvice[b.dataset.c]; }));
+    const go = $("[data-go]", box); if (go) go.addEventListener("click", () => openTab($("#t" + go.dataset.go)));
+  });
+
+  renderCard();
+})();
+</script>
+</body>
+</html>
