@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS11 Module 14 – Ecommerce, Business Systems &amp; Globalization | San Joaquin Delta College</title>
+<style>
+  :root {
+    --user-primary: #1a4480;
+    --user-accent: #c8102e;
+    --user-background: #ffffff;
+    --ink: #1b1f24;
+    --muted: #5b6573;
+    --line: #d6dce4;
+    --tint: #eef3fa;
+    --ok: #1e7b3a;
+    --ok-bg: #e7f5ec;
+    --bad: #b3261e;
+    --bad-bg: #fdecea;
+    --warn-bg: #fff6e0;
+    --radius: 12px;
+    --shadow: 0 2px 10px rgba(26, 68, 128, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Calibri, Arial, sans-serif; background: var(--user-background); color: var(--ink); line-height: 1.55; }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--user-accent); outline-offset: 2px; }
+
+  header { background: var(--user-primary); color: #fff; padding: 22px 20px 0; }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  header .kicker { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+  header h1 { margin: 4px 0 6px; font-size: 1.75rem; }
+  header p { margin: 0 0 14px; opacity: 0.92; }
+  .progress-row { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; font-size: 0.9rem; }
+  .progress { flex: 1; height: 10px; background: rgba(255,255,255,0.25); border-radius: 99px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; width: 0; background: #fff; transition: width 0.4s; }
+  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs button { background: transparent; color: #fff; border: 0; padding: 10px 14px; border-radius: 10px 10px 0 0; font-weight: 600; opacity: 0.85; }
+  nav.tabs button[aria-selected="true"] { background: var(--user-background); color: var(--user-primary); opacity: 1; }
+  nav.tabs .num { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 6px; font-size: 0.8rem; }
+  nav.tabs button[aria-selected="true"] .num { background: var(--user-primary); color: #fff; }
+  nav.tabs .done::after { content: " ✓"; }
+
+  main { padding: 24px 20px 60px; }
+  section.panel { display: none; }
+  section.panel.active { display: block; }
+  h2 { color: var(--user-primary); margin: 0 0 6px; font-size: 1.5rem; }
+  h3 { color: var(--user-primary); margin: 26px 0 8px; font-size: 1.15rem; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  .bloom { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--tint); color: var(--user-primary); margin-right: 6px; vertical-align: middle; }
+  .bloom.high { background: #fbe7ea; color: var(--user-accent); }
+  .card-box { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); background: #fff; margin: 14px 0; }
+  .btn { background: var(--user-primary); color: #fff; border: 2px solid var(--user-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost { background: #fff; color: var(--user-primary); }
+  .btn.accent { background: var(--user-accent); border-color: var(--user-accent); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .lesson-tag { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+
+  /* Flashcards */
+  .fc-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .chip { border: 2px solid var(--user-primary); background: #fff; color: var(--user-primary); border-radius: 99px; padding: 5px 13px; font-weight: 600; font-size: 0.88rem; }
+  .chip[aria-pressed="true"] { background: var(--user-primary); color: #fff; }
+  .flash-stage { perspective: 1400px; margin: 10px auto; max-width: 720px; }
+  .flash { position: relative; width: 100%; min-height: 290px; border: 0; padding: 0; background: none; transform-style: preserve-3d; transition: transform 0.55s; text-align: left; }
+  .flash.flipped { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; padding: 30px 26px 26px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); overflow: auto; }
+  .face.front { background: #fff; border: 2px solid var(--user-primary); }
+  .face.back { background: var(--user-primary); color: #fff; transform: rotateY(180deg); }
+  .face .tag { position: absolute; top: 12px; left: 16px; display: flex; gap: 6px; align-items: center; }
+  .face.back .lesson-tag { color: #dfe7f3; }
+  .face .hint { position: absolute; bottom: 10px; right: 16px; font-size: 0.78rem; opacity: 0.7; }
+  .face .q { font-size: 1.25rem; font-weight: 600; }
+  .face .a { font-size: 1.08rem; }
+  .fc-nav { display: flex; justify-content: space-between; align-items: center; max-width: 720px; margin: 14px auto 0; gap: 10px; flex-wrap: wrap; }
+  .fc-stats { color: var(--muted); font-size: 0.92rem; }
+
+  .misc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+  .misc { border: 1px solid #f2c4cb; background: #fff7f8; border-radius: var(--radius); padding: 14px 16px; }
+  .misc h4 { margin: 0 0 6px; color: var(--user-accent); font-size: 1rem; }
+  .misc .label { font-weight: 700; }
+
+  .selfcheck { border: 2px dashed var(--user-primary); border-radius: var(--radius); padding: 16px 18px; margin-top: 30px; background: var(--tint); }
+  .selfcheck h3 { margin-top: 0; }
+  .opts { display: grid; gap: 8px; margin: 8px 0 4px; }
+  .opt { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 9px 12px; color: var(--ink); }
+  .opt:hover:not(:disabled) { border-color: var(--user-primary); }
+  .opt.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .opt.picked { border-color: var(--user-primary); background: var(--tint); }
+  .opt:disabled { cursor: default; }
+  .feedback { margin: 6px 0 0; padding: 9px 12px; border-radius: 8px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--ok-bg); color: #13502a; }
+  .feedback.bad { background: var(--bad-bg); color: #7d1a14; }
+  .confidence { margin-top: 12px; }
+  .confidence button { margin: 4px 6px 4px 0; }
+
+  .step { border-left: 4px solid var(--user-primary); background: #fff; padding: 10px 14px; margin: 12px 0; border-radius: 0 10px 10px 0; box-shadow: var(--shadow); }
+  .step h4 { margin: 0 0 4px; color: var(--user-primary); }
+  .step .why { background: var(--warn-bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 0.95rem; }
+  .step.hidden { display: none; }
+  .scenario { background: var(--tint); border-radius: var(--radius); padding: 14px 16px; }
+  .scenario strong { color: var(--user-primary); }
+
+  table.data { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95rem; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: middle; }
+  table.data th { background: var(--user-primary); color: #fff; }
+  table.data tr:nth-child(even) td { background: #f7f9fc; }
+  table.data input, table.data select { width: 100%; max-width: 160px; padding: 5px 7px; border: 2px solid var(--line); border-radius: 6px; }
+  .ok-field { border-color: var(--ok) !important; background: var(--ok-bg) !important; }
+  .no-field { border-color: var(--bad) !important; background: var(--bad-bg) !important; }
+  table.data select { max-width: 230px; }
+
+  .q-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
+  .q-text { font-size: 1.1rem; font-weight: 600; margin: 8px 0; }
+  .dots { display: flex; gap: 5px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .dots span.cur { outline: 2px solid var(--user-primary); }
+  .dots span.r { background: var(--ok); }
+  .dots span.w { background: var(--bad); }
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--user-primary); }
+
+  .match-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; }
+  .match-col { display: grid; gap: 8px; align-content: start; }
+  .m-item { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 10px 12px; color: var(--ink); }
+  .m-item.term { font-weight: 700; color: var(--user-primary); }
+  .m-item.sel { border-color: var(--user-primary); background: var(--tint); }
+  .m-item.matched { border-color: var(--ok); background: var(--ok-bg); cursor: default; }
+  .m-item.shake { animation: shake 0.35s; border-color: var(--bad); }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  textarea { width: 100%; min-height: 110px; border: 2px solid var(--line); border-radius: 9px; padding: 10px; font: inherit; resize: vertical; }
+  textarea.tall { min-height: 220px; }
+  .wordcount { font-size: 0.85rem; color: var(--muted); }
+  .reveal { display: none; margin-top: 12px; }
+  .reveal.show { display: block; }
+  .rubric label { display: block; margin: 6px 0; }
+  .expert { background: var(--ok-bg); border-radius: 10px; padding: 12px 14px; }
+  .expert ul { margin: 6px 0 0; padding-left: 20px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 20px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 640px) {
+    .match-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.35rem; }
+    .flash { min-height: 330px; }
+    table.data { font-size: 0.85rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flash, .progress > span { transition: none; }
+    .m-item.shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">San Joaquin Delta College · CS11 Introduction to Computing &amp; Information Technology</div>
+    <h1>Module 14: Ecommerce, Business Systems &amp; Globalization</h1>
+    <p>Work through the five sections in order. Each one builds on the last and ends with a quick self-check.</p>
+    <div class="progress-row">
+      <span>Progress</span>
+      <div class="progress" role="progressbar" aria-label="Sections completed" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><span id="progBar"></span></div>
+      <span id="progText">0 of 5 sections</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Study sections">
+      <button role="tab" aria-selected="true" aria-controls="s1" id="t1"><span class="num">1</span>Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="s2" id="t2" tabindex="-1"><span class="num">2</span>Worked Example</button>
+      <button role="tab" aria-selected="false" aria-controls="s3" id="t3" tabindex="-1"><span class="num">3</span>Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="s4" id="t4" tabindex="-1"><span class="num">4</span>Matching</button>
+      <button role="tab" aria-selected="false" aria-controls="s5" id="t5" tabindex="-1"><span class="num">5</span>Think Deeper</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ================= SECTION 1: FLASHCARDS ================= -->
+  <section class="panel active" id="s1" role="tabpanel" aria-labelledby="t1">
+    <h2>1. Flashcards</h2>
+    <p class="lead">Start with <strong>Remember</strong> cards (key terms), then <strong>Understand</strong> (how ideas differ), then <strong>Apply</strong> (real situations). Click a card or press <kbd>Space</kbd> to flip it, and use <kbd>←</kbd> <kbd>→</kbd> to move between cards.</p>
+
+    <div class="fc-controls" role="group" aria-label="Filter by Bloom's level">
+      <button class="chip" data-level="All" aria-pressed="true">All levels</button>
+      <button class="chip" data-level="Remember" aria-pressed="false">Remember</button>
+      <button class="chip" data-level="Understand" aria-pressed="false">Understand</button>
+      <button class="chip" data-level="Apply" aria-pressed="false">Apply</button>
+    </div>
+    <div class="fc-controls" role="group" aria-label="Filter by lesson">
+      <button class="chip" data-lesson="All" aria-pressed="true">All lessons</button>
+      <button class="chip" data-lesson="14.1" aria-pressed="false">14.1 Ecommerce</button>
+      <button class="chip" data-lesson="14.2" aria-pressed="false">14.2 Business Systems</button>
+      <button class="chip" data-lesson="14.3" aria-pressed="false">14.3 Globalization</button>
+      <button class="chip" id="fcReviewOnly" aria-pressed="false">Review pile only</button>
+      <button class="btn ghost" id="fcShuffle">Shuffle</button>
+    </div>
+
+    <div class="flash-stage">
+      <button class="flash" id="flash" aria-label="Flashcard. Activate to flip.">
+        <div class="face front"><span class="tag" id="fcTagF"></span><div class="q" id="fcFront"></div><span class="hint">Click to flip</span></div>
+        <div class="face back"><span class="tag" id="fcTagB"></span><div class="a" id="fcBack"></div><span class="hint">Click to flip back</span></div>
+      </button>
+    </div>
+    <div class="fc-nav">
+      <button class="btn ghost" id="fcPrev" aria-label="Previous card">← Prev</button>
+      <span class="fc-stats" id="fcCount" aria-live="polite"></span>
+      <div class="row">
+        <button class="btn ghost" id="fcAgain">Review again</button>
+        <button class="btn" id="fcGot">Got it ✓</button>
+      </div>
+      <button class="btn ghost" id="fcNext" aria-label="Next card">Next →</button>
+    </div>
+    <p class="fc-stats" style="text-align:center" id="fcMastery"></p>
+
+    <h3>Misconception Alerts</h3>
+    <p class="lead">These are common mix-ups about Module 14. Read why each one is wrong before you take the quiz.</p>
+    <div class="misc-grid" id="miscGrid"></div>
+
+    <div class="selfcheck" data-selfcheck="1"></div>
+  </section>
+
+  <!-- ================= SECTION 2: WORKED EXAMPLE ================= -->
+  <section class="panel" id="s2" role="tabpanel" aria-labelledby="t2" hidden>
+    <h2>2. Worked Example, Then Your Turn</h2>
+    <p class="lead"><span class="bloom">Apply</span>First, follow a purchase through the six stages of the <strong>transaction processing cycle</strong>, with the reasoning shown at each step. Then classify the stages of a different purchase yourself.</p>
+
+    <div class="scenario">
+      <strong>Real-world scenario: buying a textbook online from the Delta College Bookstore.</strong> Jordan, a CS11 student, orders one copy of the course textbook from the bookstore's website and pays with a debit card. The bookstore's website and checkout system together form a <strong>transaction processing system (TPS)</strong>. Let's trace exactly what the TPS does.
+    </div>
+
+    <div id="workedSteps"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="nextStep">Show next step</button>
+      <button class="btn ghost" id="allSteps">Show all steps</button>
+    </div>
+
+    <h3>Your Turn: Ordering Dinner Through a Food Delivery App</h3>
+    <div class="scenario">
+      <strong>Scenario:</strong> On a Friday night in Stockton, you order two tacos and a horchata from a local taqueria through a food delivery app. The events below are listed <em>out of order</em>. Use the same reasoning as the worked example to choose the TPS stage for each event.
+    </div>
+    <table class="data" id="tpsTable">
+      <thead><tr><th scope="col">Event in the app</th><th scope="col">TPS stage</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row">
+      <button class="btn" id="checkTps">Check my answers</button>
+      <button class="btn ghost" id="hintTps">Hint</button>
+      <button class="btn ghost" id="showTps">Show solution</button>
+    </div>
+    <div class="feedback" id="tpsFb" aria-live="polite"></div>
+
+    <div class="selfcheck" data-selfcheck="2"></div>
+  </section>
+
+  <!-- ================= SECTION 3: QUIZ ================= -->
+  <section class="panel" id="s3" role="tabpanel" aria-labelledby="t3" hidden>
+    <h2>3. Interactive Quiz</h2>
+    <p class="lead">Twelve questions, from easiest to hardest. The early questions check recall; the later ones ask you to apply ideas, analyze cases, and evaluate claims. Every answer includes an explanation.</p>
+    <div class="card-box" id="quizBox"></div>
+    <div class="selfcheck" data-selfcheck="3"></div>
+  </section>
+
+  <!-- ================= SECTION 4: MATCHING ================= -->
+  <section class="panel" id="s4" role="tabpanel" aria-labelledby="t4" hidden>
+    <h2>4. Matching Activity</h2>
+    <p class="lead"><span class="bloom">Understand</span>Select a term on the left, then the description on the right that matches it.</p>
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <span id="matchStatus" aria-live="polite">Matched 0 of 8 · Mistakes: 0</span>
+      <button class="btn ghost" id="matchReset">Reset and shuffle</button>
+    </div>
+    <div class="match-grid">
+      <div class="match-col" id="matchLeft" aria-label="Terms"></div>
+      <div class="match-col" id="matchRight" aria-label="Descriptions"></div>
+    </div>
+    <div class="feedback" id="matchFb"></div>
+    <div class="selfcheck" data-selfcheck="4"></div>
+  </section>
+
+  <!-- ================= SECTION 5: THINK DEEPER ================= -->
+  <section class="panel" id="s5" role="tabpanel" aria-labelledby="t5" hidden>
+    <h2>5. Think Deeper: Analyze, Evaluate, Create</h2>
+    <p class="lead">These tasks ask you to justify, compare, and produce something original. Commit to your own answer first, then compare it with an expert's response.</p>
+
+    <!-- Task A -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Analyze</span>Task A: Which Hosting Plan Should a Small Shop Choose?</h3>
+      <div class="scenario"><strong>Scenario:</strong> Valley Threads, a small Lodi screen-printing shop, wants to sell T-shirts online using an ecommerce host. The owner is choosing among the sample hosting packages from the reading. <strong>Monthly cost = monthly fee + (transaction fee × monthly sales).</strong></div>
+      <table class="data" aria-label="Sample web hosting packages">
+        <thead><tr><th scope="col">Feature</th><th scope="col">Basic</th><th scope="col">Pro</th><th scope="col">Business</th><th scope="col">Unlimited</th></tr></thead>
+        <tbody>
+          <tr><td>Monthly fee</td><td>$29</td><td>$50</td><td>$99</td><td>$179</td></tr>
+          <tr><td>Storage</td><td>1 GB</td><td>5 GB</td><td>10 GB</td><td>Unlimited</td></tr>
+          <tr><td>SKUs (products)</td><td>100</td><td>2,500</td><td>10,000</td><td>Unlimited</td></tr>
+          <tr><td>Transaction fee</td><td>2%</td><td>1%</td><td>1%</td><td>0%</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Step 1: Calculate.</strong> Fill in each plan's total monthly cost, in whole dollars, for two sales levels.</p>
+      <table class="data" id="hostCalc">
+        <thead><tr><th scope="col">Monthly sales</th><th scope="col">Basic</th><th scope="col">Pro</th><th scope="col">Business</th><th scope="col">Unlimited</th></tr></thead>
+        <tbody>
+          <tr><td>$2,000</td><td><input inputmode="decimal" aria-label="Basic plan at 2,000 dollars sales" data-ans="69"></td><td><input inputmode="decimal" aria-label="Pro plan at 2,000 dollars sales" data-ans="70"></td><td><input inputmode="decimal" aria-label="Business plan at 2,000 dollars sales" data-ans="119"></td><td><input inputmode="decimal" aria-label="Unlimited plan at 2,000 dollars sales" data-ans="179"></td></tr>
+          <tr><td>$10,000</td><td><input inputmode="decimal" aria-label="Basic plan at 10,000 dollars sales" data-ans="229"></td><td><input inputmode="decimal" aria-label="Pro plan at 10,000 dollars sales" data-ans="150"></td><td><input inputmode="decimal" aria-label="Business plan at 10,000 dollars sales" data-ans="199"></td><td><input inputmode="decimal" aria-label="Unlimited plan at 10,000 dollars sales" data-ans="179"></td></tr>
+        </tbody>
+      </table>
+      <div class="row"><button class="btn" id="checkHost">Check calculations</button></div>
+      <div class="feedback" id="hostFb" aria-live="polite"></div>
+      <p><strong>Step 2: Analyze.</strong> Valley Threads sells about <strong>$2,000 a month</strong> right now, offers <strong>140 different shirt designs and sizes (SKUs)</strong>, and expects sales to reach $10,000 a month within a year. Which plan should it choose, and why? Explain how the fee structure and the SKU limit interact.</p>
+      <textarea id="taA" aria-label="Your analysis for Task A" placeholder="Compare the plans. Consider today's cost, the SKU limit, and the cost after growth..."></textarea>
+      <div class="row"><span class="wordcount" id="wcA">0 words (aim for 40+)</span><button class="btn" data-reveal="revA" data-ta="taA" data-min="20">Compare with expert</button></div>
+      <div class="reveal" id="revA"><div class="expert"><strong>Expert analysis:</strong> At $2,000 a month, Basic looks cheapest ($69 vs. $70 for Pro), but <strong>Basic allows only 100 SKUs</strong> and Valley Threads has 140, so Basic isn't actually an option. <strong>Pro is the best choice.</strong> It's the cheapest plan that fits today ($70), and at $10,000 a month it stays the cheapest ($150 vs. $179 for Unlimited and $199 for Business). The key relationship: a lower <em>percentage</em> fee matters more as sales grow, so a slightly higher monthly fee can pay for itself. Unlimited (0% fee) would only beat Pro once sales pass $12,900 a month, where $50 + 1% of sales equals $179.</div></div>
+    </div>
+
+    <!-- Task B -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Evaluate</span>Task B: Outsource, Offshore, or Keep It In-House?</h3>
+      <div class="scenario"><strong>Scenario:</strong> CentralValley Health Billing, a Stockton company, runs a 40-person customer service call center that answers questions about patients' medical bills. Leadership is considering three options to cut costs. Choose the option you would recommend and defend it using criteria from Lesson 14.3, such as cost, culture and language, time zones, control, and privacy laws.</div>
+      <div class="opts" role="group" aria-label="Choose an option">
+        <button class="opt" data-choiceb="1">Option 1: Outsource the call center to a company in the Philippines</button>
+        <button class="opt" data-choiceb="2">Option 2: Keep the call center in Stockton and add a self-service online knowledge base</button>
+        <button class="opt" data-choiceb="3">Option 3: Offshore the company's entire billing operation to another country</button>
+      </div>
+      <textarea id="taB" aria-label="Your justification for Task B" placeholder="State your recommendation, then weigh at least three criteria. Explain why the other options are weaker..."></textarea>
+      <div class="row"><span class="wordcount" id="wcB">0 words (aim for 60+)</span><button class="btn" data-reveal="revB" data-ta="taB" data-min="25">Compare with expert</button></div>
+      <div class="reveal" id="revB"><div class="expert"><strong>Expert evaluation:</strong> More than one answer is defensible, but a strong case can be made for <strong>Option 2</strong>.
+        <ul>
+          <li><strong>Privacy laws:</strong> medical billing involves protected health and financial data. Sending it abroad adds legal risk, since each country has its own data-protection laws.</li>
+          <li><strong>Culture and language:</strong> the reading notes a backlash in which some companies moved call centers back to the U.S. (<em>insourcing</em>) so customers could talk with people who share their culture. Billing questions are often stressful, so communication quality matters.</li>
+          <li><strong>Cost:</strong> a knowledge base can cut call volume. Citrix reduced calls to its call centers by 30% within the first month.</li>
+          <li><strong>Why not Option 1:</strong> lower labor costs and possible 24-hour coverage are real benefits, but they come with privacy, language, and control trade-offs.</li>
+          <li><strong>Why not Option 3:</strong> offshoring relocates an <em>entire</em> operation. That's far more disruptive than the cost problem requires, and it's a strategy mostly used for labor-intensive manufacturing.</li>
+        </ul>
+        A strong answer for Option 1 would need to address privacy safeguards and service quality directly.</div></div>
+    </div>
+
+    <!-- Task C -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Create</span>Task C: Design an Ecommerce Plan for a Local Business</h3>
+      <div class="scenario"><strong>Scenario:</strong> The Ramirez family runs a small bakery in Stockton, known for conchas and custom celebration cakes. All their sales happen in the store today. Write a one-page ecommerce plan that takes the bakery online.</div>
+      <textarea class="tall" id="taC" aria-label="Your ecommerce plan for Task C" placeholder="1. Type of ecommerce&#10;2. Website / hosting&#10;3. Marketing&#10;4. Payments&#10;5. Delivery&#10;6. Online reputation&#10;7. Ethics / privacy"></textarea>
+      <p><strong>Self-assess your plan against this checklist:</strong></p>
+      <div class="rubric" id="rubricC">
+        <label><input type="checkbox"> Identifies the type of ecommerce (B2C, and possibly B2B for catering to local businesses)</label>
+        <label><input type="checkbox"> Chooses an ecommerce host or platform and explains why (cost, SKUs, mobile app or responsive site)</label>
+        <label><input type="checkbox"> Uses at least two online marketing strategies (e.g., SEO, social media, location-based ads, email)</label>
+        <label><input type="checkbox"> Selects payment methods (credit card checkout, digital wallets such as Apple Pay or Google Pay)</label>
+        <label><input type="checkbox"> Plans delivery or pickup that suits perishable products</label>
+        <label><input type="checkbox"> Includes a strategy for building and managing online reputation (reviews, responding to feedback)</label>
+        <label><input type="checkbox"> Addresses at least one ethical or privacy issue (customer data, behavioral or location-based targeting)</label>
+      </div>
+      <div class="row"><span class="wordcount" id="rubricScore">0 of 7 criteria met</span><button class="btn" data-reveal="revC" data-ta="taC" data-min="40">Show a model plan</button></div>
+      <div class="reveal" id="revC"><div class="expert"><strong>Model plan (one strong possibility):</strong>
+        <ul>
+          <li><strong>Type:</strong> B2C for online cake orders, plus B2B catering orders from local offices and schools.</li>
+          <li><strong>Hosting:</strong> a hosted ecommerce platform such as Shopify on a Basic plan (fewer than 100 SKUs). The host provides the catalog, cart, checkout, and backups with high uptime, which the family couldn't easily maintain themselves. Use a responsive site so phone shoppers can order easily.</li>
+          <li><strong>Marketing:</strong> SEO for searches like "custom cakes Stockton," an Instagram and Facebook page showing cake photos, and location-based mobile coupons for people near the store on slow afternoons. Combine these with the shop's in-store signage (integrated marketing).</li>
+          <li><strong>Payments:</strong> secure (encrypted) card checkout plus digital wallets such as Apple Pay and Google Pay. For custom cakes, take a deposit when the order is placed.</li>
+          <li><strong>Delivery:</strong> pickup time slots, plus same-day local delivery within a short radius, because baked goods are perishable and national shipping isn't practical.</li>
+          <li><strong>Reputation:</strong> ask happy customers for Google and Yelp reviews, and respond politely to every review, including the negative ones.</li>
+          <li><strong>Ethics and privacy:</strong> collect only the customer data the bakery needs, post a privacy policy, and let customers opt in to email offers rather than tracking their location without consent.</li>
+        </ul></div></div>
+    </div>
+
+    <div class="selfcheck" data-selfcheck="5"></div>
+  </section>
+</main>
+
+<footer>CS11 Introduction to Computing &amp; Information Technology · San Joaquin Delta College · Module 14: Ecommerce, Business Systems &amp; Globalization</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const fmt = s => esc(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/_([^_]+)_/g, "<em>$1</em>");
+  const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const words = t => (t.trim().match(/\S+/g) || []).length;
+
+  /* ---------- progress ---------- */
+  const completed = new Set();
+  function markDone(n) {
+    if (completed.has(n)) return;
+    completed.add(n);
+    $("#t" + n).classList.add("done");
+    $("#progBar").style.width = (completed.size / 5 * 100) + "%";
+    $(".progress").setAttribute("aria-valuenow", completed.size);
+    $("#progText").textContent = completed.size + " of 5 sections";
+  }
+
+  /* ---------- tabs ---------- */
+  const tabs = $$('[role="tab"]');
+  function openTab(tab) {
+    tabs.forEach(t => {
+      const sel = t === tab;
+      t.setAttribute("aria-selected", sel); t.tabIndex = sel ? 0 : -1;
+      const p = $("#" + t.getAttribute("aria-controls")); p.hidden = !sel; p.classList.toggle("active", sel);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => openTab(t));
+    t.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); openTab(n);
+      }
+    });
+  });
+
+  /* ---------- 1. FLASHCARDS ---------- */
+  const cards = [
+    // Remember
+    { l: "Remember", s: "14.1", f: "What is **ecommerce**?", b: "Systems that support **electronically executed business transactions**: buying and selling over networks, the web, and mobile apps." },
+    { l: "Remember", s: "14.1", f: "What is **mcommerce**?", b: "Ecommerce carried out over **mobile devices**, through mobile apps, mobile browsers, text messages, cellular carriers, and contactless payments such as Apple Pay." },
+    { l: "Remember", s: "14.1", f: "Name the **three primary types** of ecommerce.", b: "**B2C** (business-to-consumer), **B2B** (business-to-business), and **C2C** (consumer-to-consumer, also called peer-to-peer)." },
+    { l: "Remember", s: "14.1", f: "What is **etail**?", b: "Another name for **B2C** ecommerce, a play on \"retail.\" It's the online equivalent of a brick-and-mortar retail store." },
+    { l: "Remember", s: "14.1", f: "What was **EDI**, and how did it work?", b: "**Electronic data interchange**, the root of ecommerce in the 1970s–80s. Businesses connected their systems over private **value-added networks (VANs)** to exchange transactions securely, cutting paperwork." },
+    { l: "Remember", s: "14.1", f: "What is a **cybermall**?", b: "A website that lets visitors browse a wide variety of products from many different etailers in one place." },
+    { l: "Remember", s: "14.1", f: "What is **search engine optimization (SEO)**?", b: "Techniques businesses use to get search engines to place their links **higher in search results**, such as clear page content and links from reputable sites." },
+    { l: "Remember", s: "14.1", f: "What is **crowdfunding**? Give two examples.", b: "A form of C2C in which many individuals fund a product, cause, or need. Examples: **Kickstarter, Indiegogo, Kiva** (microcredit), and **GoFundMe**." },
+    { l: "Remember", s: "14.2", f: "List the six stages of the **transaction processing cycle**.", b: "1. Data **collection** · 2. Data **editing** · 3. Data **correction** · 4. Data **manipulation** · 5. Data **storage** · 6. Data **output**" },
+    { l: "Remember", s: "14.2", f: "Name the four types of **MIS reports**.", b: "**Scheduled**, **key-indicator** (summary of yesterday's critical activities, ready each morning), **demand** (on request), and **exception** (produced automatically when something is unusual)." },
+    { l: "Remember", s: "14.2", f: "What are the three stages of **decision making**?", b: "**Intelligence** (identify the problem and gather information), **design** (develop and evaluate alternatives), and **choice** (select a course of action). Problem solving adds **implementation** and **monitoring**." },
+    { l: "Remember", s: "14.3", f: "What is **globalization**?", b: "Changes in societies and the world economy that result from dramatically increased **international trade and cultural exchange**, driven by computers, global telecommunications, and the Internet." },
+    // Understand
+    { l: "Understand", s: "14.1", f: "B2C is the most visible form of ecommerce. Is it also the largest?", b: "**No.** Ecommerce is only about **6.4%** of retail purchases, but **27.7%** of wholesale and **60.9%** of manufacturing purchases. B2B is far larger because businesses make frequent, high-volume transactions." },
+    { l: "Understand", s: "14.1", f: "Why do online retailers place a **hold** on your card instead of charging it right away?", b: "Laws require online retailers to wait until the product **ships** before deducting funds. The hold reserves the money, which is transferred at shipping." },
+    { l: "Understand", s: "14.1", f: "Why are rating systems trusted more when a seller has **hundreds or thousands** of reviews?", b: "A few reviews can be \"gamed\" with false feedback, but when ratings come from hundreds or thousands of buyers, they're **likely to reflect the true quality** of the product or seller." },
+    { l: "Understand", s: "14.1", f: "Why is Bitcoin called a **decentralized** digital currency?", b: "No central authority (like a bank or government) controls it. Transactions are verified by network nodes and recorded in a distributed ledger called a **blockchain**." },
+    { l: "Understand", s: "14.2", f: "How does **business intelligence (BI)** differ from an **MIS**?", b: "An MIS produces **reports** on the state of operations. BI goes further: it analyzes MIS and TPS data, tracks **KPIs**, and can **forecast the future** from past events, often shown in an executive dashboard." },
+    { l: "Understand", s: "14.2", f: "**Programmed** vs. **nonprogrammed** decisions: what's the difference?", b: "Programmed decisions follow a rule, procedure, or formula and are **easy to automate**. Nonprogrammed decisions involve unusual situations and usually need **human judgment**." },
+    { l: "Understand", s: "14.2", f: "Why is a TPS called the **foundation** of other information systems?", b: "The transaction data it collects and stores feeds the **MIS**, which in turn feeds **BI** and **expert systems**. Without accurate transaction data, the higher-level systems have nothing reliable to analyze." },
+    { l: "Understand", s: "14.3", f: "**Outsourcing** vs. **offshoring**: what's the difference?", b: "**Outsourcing** hires an outside company to take over a **portion** of the work. **Offshoring** relocates an **entire production line** to another country for cheaper labor, lower taxes, and lower overhead." },
+    { l: "Understand", s: "14.3", f: "What is **insourcing**, and why is it happening?", b: "Bringing previously outsourced work **back in-house**. Companies do it to communicate more easily with customers who share their culture and to gain more control over processes." },
+    { l: "Understand", s: "14.3", f: "**Multinational** vs. **global** company: what's the difference?", b: "Both operate in many countries. A **multinational** tailors its products to each country's customers, while a **global** company markets its brand and products **the same way everywhere**." },
+    // Apply
+    { l: "Apply", s: "14.1", f: "A Delta student sells a used calculator to another student on Craigslist. Which type of ecommerce is this?", b: "**C2C** (consumer-to-consumer): an individual selling to another individual." },
+    { l: "Apply", s: "14.1", f: "A dental office orders bulk printer paper on Office Depot's business site at bulk-rate pricing. Which type of ecommerce is this?", b: "**B2B**: one business buying from another business, using a verified business account." },
+    { l: "Apply", s: "14.2", f: "Every morning at 8 a.m., the cafeteria manager gets a one-page summary of yesterday's sales. Which MIS report is this?", b: "A **key-indicator report**: a special scheduled report that summarizes the previous day's critical activities at the start of the workday." },
+    { l: "Apply", s: "14.2", f: "When milk inventory falls below 10 gallons, the system automatically alerts the manager. Which MIS report is this?", b: "An **exception report**, produced automatically when a situation is unusual or requires action." },
+    { l: "Apply", s: "14.2", f: "Wendy's needs to choose the best location for a new restaurant. Which type of information system helps most?", b: "A **geographic information system (GIS)**. Wendy's uses ArcGIS to overlay data such as traffic, population, and competitors on maps." },
+    { l: "Apply", s: "14.2", f: "You call customer support and the agent already knows you ordered a TV two weeks ago. Which system makes this possible?", b: "A **customer relationship management (CRM)** system, which records every interaction with a customer: in-store, by phone, and online." },
+    { l: "Apply", s: "14.2", f: "A manager is listing three possible suppliers and comparing their costs and delivery times. Which decision-making stage is this?", b: "The **design** stage: developing alternative solutions and evaluating their feasibility. Picking one would be the **choice** stage." },
+    { l: "Apply", s: "14.3", f: "A U.S. company sends its tax-return preparation work to a firm in Bangalore, India. Is this outsourcing or offshoring?", b: "**Outsourcing**: an outside company takes over a **portion** of the work. India, and Bangalore in particular, is the biggest destination for outsourced services." }
+  ];
+  let level = "All", lesson = "All", reviewOnly = false, deck = cards.map((c, i) => i), pos = 0;
+  const status = cards.map(() => "new");
+  const filtered = () => deck.filter(i => (level === "All" || cards[i].l === level) && (lesson === "All" || cards[i].s === lesson) && (!reviewOnly || status[i] === "again"));
+  function renderCard() {
+    const list = filtered();
+    $("#flash").classList.remove("flipped");
+    if (!list.length) {
+      $("#fcFront").innerHTML = reviewOnly ? "Your review pile is empty. Nice work!" : "No cards match these filters.";
+      $("#fcBack").innerHTML = ""; $("#fcTagF").innerHTML = $("#fcTagB").innerHTML = ""; $("#fcCount").textContent = "0 cards";
+    } else {
+      if (pos >= list.length) pos = 0;
+      const c = cards[list[pos]];
+      const tag = `<span class="bloom">${c.l}</span><span class="lesson-tag">Lesson ${c.s}</span>`;
+      $("#fcTagF").innerHTML = tag; $("#fcTagB").innerHTML = tag;
+      $("#fcFront").innerHTML = fmt(c.f); $("#fcBack").innerHTML = fmt(c.b);
+      $("#fcCount").textContent = `Card ${pos + 1} of ${list.length}`;
+    }
+    const got = status.filter(s => s === "got").length, again = status.filter(s => s === "again").length;
+    $("#fcMastery").textContent = `Mastered: ${got} / ${cards.length} · Review pile: ${again}`;
+  }
+  const flipCard = () => { if (filtered().length) $("#flash").classList.toggle("flipped"); };
+  $("#flash").addEventListener("click", flipCard);
+  $("#fcNext").addEventListener("click", () => { pos = (pos + 1) % Math.max(filtered().length, 1); renderCard(); });
+  $("#fcPrev").addEventListener("click", () => { const n = Math.max(filtered().length, 1); pos = (pos - 1 + n) % n; renderCard(); });
+  function rate(s) { const list = filtered(); if (!list.length) return; status[list[pos]] = s; if (!(reviewOnly && s === "got")) pos++; renderCard(); }
+  $("#fcGot").addEventListener("click", () => rate("got"));
+  $("#fcAgain").addEventListener("click", () => rate("again"));
+  $("#fcShuffle").addEventListener("click", () => { deck = shuffle(deck); pos = 0; renderCard(); });
+  $$(".chip[data-level]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-level]").forEach(c => c.setAttribute("aria-pressed", c === ch)); level = ch.dataset.level; pos = 0; renderCard(); }));
+  $$(".chip[data-lesson]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-lesson]").forEach(c => c.setAttribute("aria-pressed", c === ch)); lesson = ch.dataset.lesson; pos = 0; renderCard(); }));
+  $("#fcReviewOnly").addEventListener("click", e => { reviewOnly = !reviewOnly; e.currentTarget.setAttribute("aria-pressed", reviewOnly); pos = 0; renderCard(); });
+  document.addEventListener("keydown", e => {
+    if ($("#s1").hidden || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (e.key === "ArrowRight") $("#fcNext").click();
+    else if (e.key === "ArrowLeft") $("#fcPrev").click();
+    else if (e.key === " " && document.activeElement.tagName !== "BUTTON") { e.preventDefault(); flipCard(); }
+  });
+
+  /* ---------- misconceptions ---------- */
+  const misconceptions = [
+    { m: "\"Ecommerce mostly means people shopping on sites like Amazon.\"", w: "B2C is the most **visible** kind of ecommerce, not the biggest. Ecommerce is just 6.4% of retail purchases but 27.7% of wholesale and 60.9% of manufacturing purchases.", r: "**B2B** dominates ecommerce because businesses buy frequently and in huge volumes." },
+    { m: "\"Outsourcing and offshoring are the same thing.\"", w: "They overlap, but they differ in scope.", r: "**Outsourcing** hires out a **portion** of the work (e.g., a call center in India). **Offshoring** moves an **entire production line** to another country (e.g., manufacturing in China)." },
+    { m: "\"If a website has a digital certificate, the business must be trustworthy.\"", w: "A digital certificate helps show the business is **legitimate** and the connection is **secure**, but it doesn't prove the business is **reputable**.", r: "Check reputation too: ratings from many buyers, reviews, and the company's track record." },
+    { m: "\"Installing CRM software will automatically make customers happier.\"", w: "The reading notes that CRM developers themselves say software alone won't improve satisfaction.", r: "CRM needs a **holistic** approach, with strong emphasis on **training employees** in how to interact with customers." },
+    { m: "\"Etail is a type of B2B ecommerce.\"", w: "One sentence in the reading mislabels it. Etail (electronic retail) is how businesses sell to **consumers**.", r: "**Etail = B2C**, the online equivalent of a brick-and-mortar retail store." }
+  ];
+  $("#miscGrid").innerHTML = misconceptions.map((x, i) => `
+    <article class="misc"><h4>⚠ Misconception ${i + 1}</h4>
+      <p><span class="label">Belief:</span> ${fmt(x.m)}</p>
+      <p><span class="label">Why it's wrong:</span> ${fmt(x.w)}</p>
+      <p style="margin-bottom:0"><span class="label">Correct reasoning:</span> ${fmt(x.r)}</p></article>`).join("");
+
+  /* ---------- 2. WORKED EXAMPLE ---------- */
+  const steps = [
+    { h: "Stage 1 · Data collection", t: "Jordan selects the textbook (item #CS11-0142, quantity 1), enters a shipping address, and types in a debit card number.",
+      why: "Collection is about **capturing** the raw facts of the transaction: what, how many, where, and how it's paid for. Ask yourself, \"Is data entering the system for the first time?\" If yes, it's collection." },
+    { h: "Stage 2 · Data editing", t: "The system checks that item #CS11-0142 exists and is in stock, and that the card number is valid. It finds that one digit of the card number was mistyped.",
+      why: "Editing means **checking validity**, not changing anything yet. The system is asking whether the data is acceptable. Catching errors here prevents bad data from reaching the database and reports later." },
+    { h: "Stage 3 · Data correction", t: "The website highlights the card field in red: \"Please re-enter your card number.\" Jordan fixes the typo.",
+      why: "Correction happens **only when editing finds a problem**. It's a request to fix invalid data. If the card had been valid, this stage would have been skipped." },
+    { h: "Stage 4 · Data manipulation", t: "The system calculates the subtotal, sales tax, and shipping, then the order total. It also places a hold on the funds; the charge happens when the book ships.",
+      why: "Manipulation means **processing**: calculating totals, tax, and shipping. Remember from the reading that online retailers place a hold and collect the money at shipping, as the law requires." },
+    { h: "Stage 5 · Data storage", t: "The completed order is saved in the bookstore's transaction database, and the inventory count for the textbook drops by one.",
+      why: "Storage keeps a **permanent record**. This stored data is what makes the TPS the foundation of other systems: the bookstore's MIS will later read it." },
+    { h: "Stage 6 · Data output", t: "Jordan receives an email receipt, and the bookstore warehouse prints a picking list to pull the book from the shelf.",
+      why: "Output produces **documents for people**: receipts for customers, and picking lists for the warehouse." },
+    { h: "Beyond the TPS · How this data gets used", t: "That night, the bookstore's MIS finds that only 3 copies of the textbook are left, below the minimum of 5, and automatically emails the manager an **exception report**. The manager reorders the book before the semester rush.",
+      why: "This shows how the systems connect: the **TPS** recorded the transaction, and the **MIS** turned many transactions into a report that supports a decision. It's also a **programmed decision**, because the reorder rule could be fully automated." }
+  ];
+  let shown = 0;
+  $("#workedSteps").innerHTML = steps.map((s, i) => `<div class="step hidden" id="ws${i}"><h4>${s.h}</h4><p style="margin:4px 0">${fmt(s.t)}</p><div class="why"><strong>Reasoning:</strong> ${fmt(s.why)}</div></div>`).join("");
+  function showStep() {
+    if (shown < steps.length) { $("#ws" + shown).classList.remove("hidden"); shown++; }
+    if (shown === steps.length) { $("#nextStep").disabled = true; $("#nextStep").textContent = "All steps shown"; }
+  }
+  showStep();
+  $("#nextStep").addEventListener("click", showStep);
+  $("#allSteps").addEventListener("click", () => { while (shown < steps.length) showStep(); });
+
+  const stages = ["Data collection", "Data editing", "Data correction", "Data manipulation", "Data storage", "Data output"];
+  const tpsEvents = [
+    ["The app adds up the food, sales tax, delivery fee, and tip to show your total.", 3],
+    ["The app checks your card number and discovers that it has expired.", 1],
+    ["You get a receipt by email, and a ticket prints in the taqueria's kitchen.", 5],
+    ["You tap two tacos and a horchata, then enter your card number and address.", 0],
+    ["The app asks you to enter a different, valid card.", 2],
+    ["The app saves the order in the restaurant's order database.", 4]
+  ];
+  $("#tpsTable tbody").innerHTML = tpsEvents.map((e, i) => `<tr><td>${esc(e[0])}</td><td><select aria-label="TPS stage for event ${i + 1}" data-ans="${e[1]}"><option value="">Choose a stage…</option>${stages.map((s, k) => `<option value="${k}">${s}</option>`).join("")}</select></td></tr>`).join("");
+  $("#checkTps").addEventListener("click", () => {
+    let right = 0; const sels = $$("#tpsTable select");
+    sels.forEach(s => { const ok = s.value === s.dataset.ans; s.classList.toggle("ok-field", ok); s.classList.toggle("no-field", !ok); if (ok) right++; });
+    const fb = $("#tpsFb"); fb.className = "feedback show " + (right === sels.length ? "good" : "bad");
+    fb.textContent = right === sels.length
+      ? "All 6 correct! In time order: collection → editing (expired card found) → correction (enter a new card) → manipulation (totals) → storage → output (receipt and kitchen ticket)."
+      : `${right} of ${sels.length} correct. For each red box, ask the question from the worked example: Is data entering, being checked, being fixed, being calculated, being saved, or being printed or sent?`;
+  });
+  $("#hintTps").addEventListener("click", () => { const fb = $("#tpsFb"); fb.className = "feedback show good"; fb.textContent = "Hint: correction only happens after editing finds a problem, so pair the \"expired card\" event with the \"enter a different card\" event. Calculating totals is manipulation; anything sent to a person is output."; });
+  $("#showTps").addEventListener("click", () => { $$("#tpsTable select").forEach(s => { s.value = s.dataset.ans; s.classList.add("ok-field"); s.classList.remove("no-field"); }); const fb = $("#tpsFb"); fb.className = "feedback show good"; fb.textContent = "Solution shown. Before moving on, explain to yourself why each event fits its stage."; });
+
+  /* ---------- 3. QUIZ ---------- */
+  const quiz = [
+    { b: "Remember", q: "Which type of ecommerce connects individuals who want to sell to other individuals, as on eBay and Craigslist?", o: ["B2C", "B2B", "C2C", "EDI"], a: 2, e: "Consumer-to-consumer (C2C), also called peer-to-peer. eBay is credited as the first C2C site." },
+    { b: "Remember", q: "What is the **first** stage of the transaction processing cycle?", o: ["Data editing", "Data collection", "Data storage", "Data output"], a: 1, e: "The cycle starts by capturing the data (item number, quantity, payment method), then editing, correction, manipulation, storage, and output." },
+    { b: "Remember", q: "Which list shows the three stages of **decision making** in order?", o: ["Design, choice, monitoring", "Intelligence, design, choice", "Choice, implementation, monitoring", "Investigation, analysis, design"], a: 1, e: "Intelligence → design → choice. Implementation and monitoring extend decision making into full problem solving. (Investigation, analysis, design… are SDLC phases.)" },
+    { b: "Understand", q: "Why is B2B ecommerce **especially valuable** compared with B2C?", o: ["Businesses make frequent, high-volume transactions", "B2B websites are easier to build", "Consumers aren't allowed to shop online", "B2B transactions don't need payment systems"], a: 0, e: "Frequent, high-volume purchasing is why ecommerce accounts for 60.9% of manufacturing purchases but only 6.4% of retail." },
+    { b: "Understand", q: "What does **business intelligence** do that a basic MIS does not?", o: ["Records each sale at the register", "Forecasts the future based on past events", "Prints receipts for customers", "Stores data in a database"], a: 1, e: "BI analyzes MIS and TPS data, tracks KPIs, and adds forecasting. Recording sales and printing receipts are TPS jobs." },
+    { b: "Understand", q: "Which statement correctly compares outsourcing and offshoring?", o: ["They mean exactly the same thing", "Offshoring moves only one task; outsourcing moves the whole factory", "Outsourcing hires out a portion of the work; offshoring relocates an entire production line", "Outsourcing always involves another country"], a: 2, e: "Portion vs. entire production line. Outsourcing can even be domestic, such as hiring IBM to run a company's information systems." },
+    { b: "Apply", q: "At the campus cafeteria register, a cashier scans an item code and the system responds \"Invalid item number.\" Which TPS stage just occurred?", o: ["Data collection", "Data editing", "Data manipulation", "Data output"], a: 1, e: "Editing checks the validity of the data. The data is being checked, not entered or calculated." },
+    { b: "Apply", q: "On the first day of each month, the accounting department automatically receives a payables report. What type of MIS report is this?", o: ["Demand report", "Exception report", "Scheduled report", "Key-indicator report"], a: 2, e: "It's produced on a regular schedule (monthly). A key-indicator report is a daily summary each morning, and an exception report is triggered by an unusual situation." },
+    { b: "Apply", q: "Covisint, founded by Ford, GM, and other automakers so manufacturers and suppliers can trade in one place, is an example of…", o: ["A cybermall", "An electronic exchange", "A crowdfunding platform", "A digital wallet"], a: 1, e: "An electronic exchange is an industry-specific B2B platform that promotes cooperation among competitors." },
+    { b: "Analyze", q: "A dashboard reads: \"Based on the last three years, next month's concert-ticket sales will likely drop 12%.\" Which system most likely produced this, and why?", o: ["A TPS, because it records ticket sales", "A BI system, because it forecasts from past data", "A GIS, because it uses a map", "An EDI network, because it connects businesses"], a: 1, e: "Forecasting from historical data, shown on an executive dashboard, is the hallmark of BI. The TPS supplied the raw sales data, but it doesn't predict anything." },
+    { b: "Evaluate", q: "A company runs five separate, incompatible systems from different vendors for payroll, inventory, sales, HR, and shipping. Data is duplicated and often wrong. What is the **best** recommendation?", o: ["Buy a sixth system to connect the other five", "Implement an ERP system with a central database", "Replace everything with spreadsheets", "Outsource customer service"], a: 1, e: "ERP integrates all of these into one system with a central database, which reduces redundancy and improves communication. The trade-offs: it's expensive, has a learning curve, and creates dependence on one vendor." },
+    { b: "Evaluate", q: "A new online seller says: \"We have a digital certificate and a perfect 5-star rating from 3 buyers, so customers can fully trust us.\" Which evaluation is **most accurate**?", o: ["The claim is fully justified", "The certificate shows legitimacy and a secure connection, but 3 ratings are too few to judge reputation", "Digital certificates are useless", "Ratings matter, but certificates guarantee quality"], a: 1, e: "A certificate doesn't ensure that a business is reputable, and a handful of ratings can be gamed. Ratings become meaningful with hundreds or thousands of buyers." }
+  ];
+  let qi = 0, qScore = 0; const qRes = [];
+  function renderQ() {
+    const box = $("#quizBox");
+    if (qi >= quiz.length) {
+      const pct = Math.round(qScore / quiz.length * 100);
+      const msg = pct >= 85 ? "Excellent. You've mastered Module 14's key ideas." : pct >= 65 ? "Good progress. Review the explanations for the questions you missed, then retake the quiz." : "Revisit the flashcards and the worked example, then try again.";
+      box.innerHTML = `<div style="text-align:center"><div class="score-big">${qScore} / ${quiz.length}</div><p>${pct}% · ${msg}</p><div class="dots" style="justify-content:center">${qRes.map(r => `<span class="${r ? "r" : "w"}"></span>`).join("")}</div><button class="btn" id="qRetry">Retake quiz</button></div>`;
+      $("#qRetry").addEventListener("click", () => { qi = 0; qScore = 0; qRes.length = 0; renderQ(); });
+      return;
+    }
+    const q = quiz[qi], high = /Analyze|Evaluate/.test(q.b);
+    box.innerHTML = `
+      <div class="q-meta"><span>Question ${qi + 1} of ${quiz.length}</span><span>Score: ${qScore}</span></div>
+      <div class="dots" aria-hidden="true">${quiz.map((_, k) => `<span class="${k < qRes.length ? (qRes[k] ? "r" : "w") : ""}${k === qi ? " cur" : ""}"></span>`).join("")}</div>
+      <p class="q-text"><span class="bloom${high ? " high" : ""}">${q.b}</span>${fmt(q.q)}</p>
+      <div class="opts" role="group" aria-label="Answer choices">${shuffle(q.o.map((_, k) => k)).map((k, p) => `<button class="opt" data-k="${k}">${String.fromCharCode(65 + p)}. ${fmt(q.o[k])}</button>`).join("")}</div>
+      <div class="feedback" id="qFb" aria-live="polite"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="qNext" hidden>${qi === quiz.length - 1 ? "See results" : "Next question →"}</button></div>`;
+    $$(".opt", box).forEach(btn => btn.addEventListener("click", () => {
+      const ok = +btn.dataset.k === q.a;
+      $$(".opt", box).forEach(b => { b.disabled = true; if (+b.dataset.k === q.a) b.classList.add("correct"); });
+      if (!ok) btn.classList.add("wrong");
+      if (ok) qScore++; qRes.push(ok);
+      const fb = $("#qFb"); fb.className = "feedback show " + (ok ? "good" : "bad");
+      fb.innerHTML = (ok ? "<strong>Correct.</strong> " : "<strong>Not quite.</strong> ") + fmt(q.e);
+      const nx = $("#qNext"); nx.hidden = false; nx.focus();
+      nx.addEventListener("click", () => { qi++; renderQ(); });
+    }));
+  }
+  renderQ();
+
+  /* ---------- 4. MATCHING ---------- */
+  const pairs = [
+    ["Etail", "B2C ecommerce: the online equivalent of a brick-and-mortar retail store"],
+    ["EDI", "Early B2B method that connected company systems over private value-added networks"],
+    ["SEO", "Techniques that move a company's links higher in search results"],
+    ["TPS", "Supports and records transactions such as sales and payroll"],
+    ["Exception report", "Produced automatically when a situation is unusual or needs action"],
+    ["CRM", "Stores every interaction with customers to personalize service and target marketing"],
+    ["ERP", "Integrates all of a company's data processing into one system with a central database"],
+    ["Offshoring", "Relocates an entire production line to another country for lower costs"]
+  ];
+  let selL = null, selR = null, matched = 0, mistakes = 0;
+  function buildMatch() {
+    matched = 0; mistakes = 0; selL = selR = null;
+    $("#matchLeft").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item term" data-i="${i}" data-side="L">${esc(pairs[i][0])}</button>`).join("");
+    $("#matchRight").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item" data-i="${i}" data-side="R">${esc(pairs[i][1])}</button>`).join("");
+    $("#matchFb").className = "feedback"; updMatch();
+    $$(".m-item").forEach(b => b.addEventListener("click", () => pick(b)));
+  }
+  const updMatch = () => { $("#matchStatus").textContent = `Matched ${matched} of ${pairs.length} · Mistakes: ${mistakes}`; };
+  function pick(b) {
+    if (b.classList.contains("matched")) return;
+    const side = b.dataset.side;
+    $$(`.m-item[data-side="${side}"]`).forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel");
+    if (side === "L") selL = b; else selR = b;
+    if (selL && selR) {
+      if (selL.dataset.i === selR.dataset.i) {
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("matched"); x.setAttribute("aria-disabled", "true"); });
+        matched++;
+      } else {
+        mistakes++;
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("shake"); setTimeout(() => x.classList.remove("shake"), 400); });
+      }
+      selL = selR = null; updMatch();
+      if (matched === pairs.length) {
+        const fb = $("#matchFb"); fb.className = "feedback show good";
+        fb.textContent = mistakes === 0 ? "Perfect: all 8 matched with no mistakes!" : `All matched with ${mistakes} mistake(s). Reset and try for a perfect round.`;
+      }
+    }
+  }
+  $("#matchReset").addEventListener("click", buildMatch);
+  buildMatch();
+
+  /* ---------- 5. THINK DEEPER ---------- */
+  [["taA", "wcA", 40], ["taB", "wcB", 60]].forEach(([ta, wc, goal]) => {
+    $("#" + ta).addEventListener("input", e => { $("#" + wc).textContent = `${words(e.target.value)} words (aim for ${goal}+)`; });
+  });
+  $("#checkHost").addEventListener("click", () => {
+    let right = 0; const ins = $$("#hostCalc input");
+    ins.forEach(inp => { const v = parseFloat(inp.value.replace(/[$,\s]/g, "")); const ok = Math.abs(v - +inp.dataset.ans) < 0.5; inp.classList.toggle("ok-field", ok); inp.classList.toggle("no-field", !ok); if (ok) right++; });
+    const fb = $("#hostFb"); fb.className = "feedback show " + (right === ins.length ? "good" : "bad");
+    fb.textContent = right === ins.length
+      ? "All 8 correct! Example: Pro at $10,000 = $50 + (1% × $10,000) = $50 + $100 = $150. Now use these numbers in Step 2."
+      : `${right} of 8 correct. Worked check: Basic at $2,000 = $29 + (0.02 × $2,000) = $29 + $40 = $69. Use the same pattern for the red boxes.`;
+  });
+  $$("[data-choiceb]").forEach(b => b.addEventListener("click", () => { $$("[data-choiceb]").forEach(x => x.classList.remove("picked")); b.classList.add("picked"); }));
+  $$("#rubricC input").forEach(cb => cb.addEventListener("change", () => { $("#rubricScore").textContent = `${$$("#rubricC input:checked").length} of 7 criteria met`; }));
+  $$("[data-reveal]").forEach(btn => btn.addEventListener("click", () => {
+    const ta = $("#" + btn.dataset.ta), min = +btn.dataset.min;
+    if (words(ta.value) < min) {
+      ta.focus(); ta.style.borderColor = "var(--user-accent)";
+      ta.setAttribute("placeholder", `Write your own answer first (at least ${min} words). Committing to an answer before you see the expert's is how you learn.`);
+      return;
+    }
+    ta.style.borderColor = ""; $("#" + btn.dataset.reveal).classList.add("show");
+  }));
+
+  /* ---------- SELF-CHECKS ---------- */
+  const selfChecks = {
+    1: [
+      { q: "Selling handmade earrings to strangers on Etsy is an example of…", o: ["B2B", "C2C", "EDI"], a: 1, e: "An individual selling to other individuals through a platform is C2C." },
+      { q: "Which system is the **foundation** that the MIS and BI systems draw their data from?", o: ["Transaction processing system", "Geographic information system", "Knowledge management system"], a: 0, e: "The TPS collects and stores the transaction data that the higher-level systems analyze." }
+    ],
+    2: [
+      { q: "A website rejects a ZIP code because it has only 4 digits. Which TPS stage is this?", o: ["Data collection", "Data editing", "Data storage"], a: 1, e: "The data is being checked for validity, which is editing. Asking you to fix it would be correction." },
+      { q: "In the worked example, what turned the bookstore's stored transactions into a reorder alert?", o: ["The TPS output stage", "An MIS exception report", "A cybermall"], a: 1, e: "The MIS read the transaction data and automatically flagged the unusually low inventory." }
+    ],
+    3: [
+      { q: "Which decision is **easiest to automate**?", o: ["Reorder paper when fewer than 5 boxes remain", "Decide whether to open a store in a new country", "Respond to a sudden public-relations crisis"], a: 0, e: "A rule-based, programmed decision is easy for a computer. The others are nonprogrammed." },
+      { q: "A company keeps management in the U.S. but tailors its products to each country it sells in. It is a…", o: ["Global company", "Multinational company", "International company"], a: 1, e: "Tailoring to local customers marks a multinational. A global company markets the same way everywhere." }
+    ],
+    4: [
+      { q: "Which system lets a support agent see that you called last week about your order?", o: ["ERP", "CRM", "GIS"], a: 1, e: "CRM records every customer interaction across channels." },
+      { q: "Early businesses exchanged transactions over private value-added networks using…", o: ["SEO", "EDI", "Bitcoin"], a: 1, e: "Electronic data interchange (EDI) is the root of modern ecommerce." }
+    ],
+    5: [
+      { q: "In Task A, why couldn't Valley Threads choose the Basic plan even though it costs less at $2,000 in sales?", o: ["Its 100-SKU limit is too small for 140 products", "Basic has no shopping cart", "Basic charges no transaction fee"], a: 0, e: "Constraints such as SKU limits can rule out the cheapest option, so always check requirements before cost." },
+      { q: "Which concern is **most important** when outsourcing medical billing support to another country?", o: ["Paint colors in the office", "Privacy laws protecting personal and financial data", "The size of the company logo"], a: 1, e: "Every country has its own laws on protecting personal and financial data, which is a key global-business challenge." }
+    ]
+  };
+  const confAdvice = { 1: "Revisit this section before moving on: reread the flashcards or steps you weren't sure about.", 2: "Good. Review any item you missed, then continue.", 3: "Great! You're ready for the next section." };
+  $$("[data-selfcheck]").forEach(box => {
+    const n = box.dataset.selfcheck, items = selfChecks[n]; let answered = 0;
+    box.innerHTML = `<h3>✔ Self-Check: Section ${n}</h3><p class="lead" style="margin-bottom:8px">Two quick questions to check your understanding before you move on.</p>` +
+      items.map((it, j) => `<div class="sc-item" data-j="${j}"><p style="margin:10px 0 4px"><strong>${j + 1}.</strong> ${fmt(it.q)}</p><div class="opts">${shuffle(it.o.map((_, k) => k)).map(k => `<button class="opt" data-k="${k}">${fmt(it.o[k])}</button>`).join("")}</div><div class="feedback"></div></div>`).join("") +
+      `<div class="confidence"><strong>How confident do you feel?</strong><br><button class="btn ghost" data-c="1">Not yet</button><button class="btn ghost" data-c="2">Getting there</button><button class="btn ghost" data-c="3">Confident</button><div class="feedback"></div></div>` +
+      (n < 5 ? `<div class="row" style="margin-top:12px"><button class="btn accent" data-go="${+n + 1}">Continue to Section ${+n + 1} →</button></div>` : "");
+    $$(".sc-item", box).forEach(item => {
+      const it = items[item.dataset.j];
+      $$(".opt", item).forEach(b => b.addEventListener("click", () => {
+        const ok = +b.dataset.k === it.a;
+        $$(".opt", item).forEach(x => { x.disabled = true; if (+x.dataset.k === it.a) x.classList.add("correct"); });
+        if (!ok) b.classList.add("wrong");
+        const fb = $(".feedback", item); fb.className = "feedback show " + (ok ? "good" : "bad"); fb.innerHTML = (ok ? "✓ " : "✗ ") + fmt(it.e);
+        if (++answered === items.length) markDone(+n);
+      }));
+    });
+    $$("[data-c]", box).forEach(b => b.addEventListener("click", () => { const fb = $(".confidence .feedback", box); fb.className = "feedback show " + (b.dataset.c === "1" ? "bad" : "good"); fb.textContent = confAdvice[b.dataset.c]; }));
+    const go = $("[data-go]", box); if (go) go.addEventListener("click", () => openTab($("#t" + go.dataset.go)));
+  });
+
+  renderCard();
+})();
+</script>
+</body>
+</html>
