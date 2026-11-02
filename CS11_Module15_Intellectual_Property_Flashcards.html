@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS11 Module 15 – Intellectual Property | San Joaquin Delta College</title>
+<style>
+  :root {
+    --user-primary: #1a4480;
+    --user-accent: #c8102e;
+    --user-background: #ffffff;
+    --ink: #1b1f24;
+    --muted: #5b6573;
+    --line: #d6dce4;
+    --tint: #eef3fa;
+    --ok: #1e7b3a;
+    --ok-bg: #e7f5ec;
+    --bad: #b3261e;
+    --bad-bg: #fdecea;
+    --warn-bg: #fff6e0;
+    --radius: 12px;
+    --shadow: 0 2px 10px rgba(26, 68, 128, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Calibri, Arial, sans-serif; background: var(--user-background); color: var(--ink); line-height: 1.55; }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--user-accent); outline-offset: 2px; }
+
+  header { background: var(--user-primary); color: #fff; padding: 22px 20px 0; }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  header .kicker { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+  header h1 { margin: 4px 0 6px; font-size: 1.75rem; }
+  header p { margin: 0 0 14px; opacity: 0.92; }
+  .progress-row { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; font-size: 0.9rem; }
+  .progress { flex: 1; height: 10px; background: rgba(255,255,255,0.25); border-radius: 99px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; width: 0; background: #fff; transition: width 0.4s; }
+  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs button { background: transparent; color: #fff; border: 0; padding: 10px 14px; border-radius: 10px 10px 0 0; font-weight: 600; opacity: 0.85; }
+  nav.tabs button[aria-selected="true"] { background: var(--user-background); color: var(--user-primary); opacity: 1; }
+  nav.tabs .num { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 6px; font-size: 0.8rem; }
+  nav.tabs button[aria-selected="true"] .num { background: var(--user-primary); color: #fff; }
+  nav.tabs .done::after { content: " ✓"; }
+
+  main { padding: 24px 20px 60px; }
+  section.panel { display: none; }
+  section.panel.active { display: block; }
+  h2 { color: var(--user-primary); margin: 0 0 6px; font-size: 1.5rem; }
+  h3 { color: var(--user-primary); margin: 26px 0 8px; font-size: 1.15rem; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  .bloom { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--tint); color: var(--user-primary); margin-right: 6px; vertical-align: middle; }
+  .bloom.high { background: #fbe7ea; color: var(--user-accent); }
+  .card-box { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); background: #fff; margin: 14px 0; }
+  .btn { background: var(--user-primary); color: #fff; border: 2px solid var(--user-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost { background: #fff; color: var(--user-primary); }
+  .btn.accent { background: var(--user-accent); border-color: var(--user-accent); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .lesson-tag { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+
+  /* Flashcards */
+  .fc-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .chip { border: 2px solid var(--user-primary); background: #fff; color: var(--user-primary); border-radius: 99px; padding: 5px 13px; font-weight: 600; font-size: 0.88rem; }
+  .chip[aria-pressed="true"] { background: var(--user-primary); color: #fff; }
+  .flash-stage { perspective: 1400px; margin: 10px auto; max-width: 720px; }
+  .flash { position: relative; width: 100%; min-height: 290px; border: 0; padding: 0; background: none; transform-style: preserve-3d; transition: transform 0.55s; text-align: left; }
+  .flash.flipped { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; padding: 30px 26px 26px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); overflow: auto; }
+  .face.front { background: #fff; border: 2px solid var(--user-primary); }
+  .face.back { background: var(--user-primary); color: #fff; transform: rotateY(180deg); }
+  .face .tag { position: absolute; top: 12px; left: 16px; display: flex; gap: 6px; align-items: center; }
+  .face.back .lesson-tag { color: #dfe7f3; }
+  .face .hint { position: absolute; bottom: 10px; right: 16px; font-size: 0.78rem; opacity: 0.7; }
+  .face .q { font-size: 1.25rem; font-weight: 600; }
+  .face .a { font-size: 1.08rem; }
+  .fc-nav { display: flex; justify-content: space-between; align-items: center; max-width: 720px; margin: 14px auto 0; gap: 10px; flex-wrap: wrap; }
+  .fc-stats { color: var(--muted); font-size: 0.92rem; }
+
+  .misc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+  .misc { border: 1px solid #f2c4cb; background: #fff7f8; border-radius: var(--radius); padding: 14px 16px; }
+  .misc h4 { margin: 0 0 6px; color: var(--user-accent); font-size: 1rem; }
+  .misc .label { font-weight: 700; }
+
+  .selfcheck { border: 2px dashed var(--user-primary); border-radius: var(--radius); padding: 16px 18px; margin-top: 30px; background: var(--tint); }
+  .selfcheck h3 { margin-top: 0; }
+  .opts { display: grid; gap: 8px; margin: 8px 0 4px; }
+  .opt { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 9px 12px; color: var(--ink); }
+  .opt:hover:not(:disabled) { border-color: var(--user-primary); }
+  .opt.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .opt.picked { border-color: var(--user-primary); background: var(--tint); }
+  .opt:disabled { cursor: default; }
+  .feedback { margin: 6px 0 0; padding: 9px 12px; border-radius: 8px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--ok-bg); color: #13502a; }
+  .feedback.bad { background: var(--bad-bg); color: #7d1a14; }
+  .confidence { margin-top: 12px; }
+  .confidence button { margin: 4px 6px 4px 0; }
+
+  .step { border-left: 4px solid var(--user-primary); background: #fff; padding: 10px 14px; margin: 12px 0; border-radius: 0 10px 10px 0; box-shadow: var(--shadow); }
+  .step h4 { margin: 0 0 4px; color: var(--user-primary); }
+  .step .why { background: var(--warn-bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 0.95rem; }
+  .step.hidden { display: none; }
+  .scenario { background: var(--tint); border-radius: var(--radius); padding: 14px 16px; }
+  .scenario strong { color: var(--user-primary); }
+
+  table.data { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95rem; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: middle; }
+  table.data th { background: var(--user-primary); color: #fff; }
+  table.data tr:nth-child(even) td { background: #f7f9fc; }
+  table.data input, table.data select { width: 100%; max-width: 200px; padding: 5px 7px; border: 2px solid var(--line); border-radius: 6px; }
+  .ok-field { border-color: var(--ok) !important; background: var(--ok-bg) !important; }
+  .no-field { border-color: var(--bad) !important; background: var(--bad-bg) !important; }
+
+  .q-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
+  .q-text { font-size: 1.1rem; font-weight: 600; margin: 8px 0; }
+  .dots { display: flex; gap: 5px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .dots span.cur { outline: 2px solid var(--user-primary); }
+  .dots span.r { background: var(--ok); }
+  .dots span.w { background: var(--bad); }
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--user-primary); }
+
+  .match-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; }
+  .match-col { display: grid; gap: 8px; align-content: start; }
+  .m-item { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 9px; padding: 10px 12px; color: var(--ink); }
+  .m-item.term { font-weight: 700; color: var(--user-primary); }
+  .m-item.sel { border-color: var(--user-primary); background: var(--tint); }
+  .m-item.matched { border-color: var(--ok); background: var(--ok-bg); cursor: default; }
+  .m-item.shake { animation: shake 0.35s; border-color: var(--bad); }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  textarea { width: 100%; min-height: 110px; border: 2px solid var(--line); border-radius: 9px; padding: 10px; font: inherit; resize: vertical; }
+  textarea.tall { min-height: 200px; }
+  .wordcount { font-size: 0.85rem; color: var(--muted); }
+  .reveal { display: none; margin-top: 12px; }
+  .reveal.show { display: block; }
+  .rubric label { display: block; margin: 6px 0; }
+  .expert { background: var(--ok-bg); border-radius: 10px; padding: 12px 14px; }
+  .expert ul { margin: 6px 0 0; padding-left: 20px; }
+  blockquote.src { margin: 10px 0; padding: 10px 14px; border-left: 4px solid var(--line); background: #f7f9fc; font-style: italic; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 20px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 640px) {
+    .match-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.35rem; }
+    .flash { min-height: 330px; }
+    table.data { font-size: 0.85rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flash, .progress > span { transition: none; }
+    .m-item.shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">San Joaquin Delta College · CS11 Introduction to Computing &amp; Information Technology</div>
+    <h1>Module 15: Intellectual Property</h1>
+    <p>Piracy, plagiarism, and the laws and technologies that protect creative work. Complete the five sections in order; each one ends with a quick self-check.</p>
+    <div class="progress-row">
+      <span>Progress</span>
+      <div class="progress" role="progressbar" aria-label="Sections completed" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><span id="progBar"></span></div>
+      <span id="progText">0 of 5 sections</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Study sections">
+      <button role="tab" aria-selected="true" aria-controls="s1" id="t1"><span class="num">1</span>Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="s2" id="t2" tabindex="-1"><span class="num">2</span>Worked Example</button>
+      <button role="tab" aria-selected="false" aria-controls="s3" id="t3" tabindex="-1"><span class="num">3</span>Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="s4" id="t4" tabindex="-1"><span class="num">4</span>Matching</button>
+      <button role="tab" aria-selected="false" aria-controls="s5" id="t5" tabindex="-1"><span class="num">5</span>Think Deeper</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ================= SECTION 1: FLASHCARDS ================= -->
+  <section class="panel active" id="s1" role="tabpanel" aria-labelledby="t1">
+    <h2>1. Flashcards</h2>
+    <p class="lead">Start with <strong>Remember</strong> cards (key terms), then <strong>Understand</strong> (why things work the way they do), then <strong>Apply</strong> (real situations). Click a card or press <kbd>Space</kbd> to flip it, and use <kbd>←</kbd> <kbd>→</kbd> to move between cards.</p>
+
+    <div class="fc-controls" role="group" aria-label="Filter by Bloom's level">
+      <button class="chip" data-level="All" aria-pressed="true">All levels</button>
+      <button class="chip" data-level="Remember" aria-pressed="false">Remember</button>
+      <button class="chip" data-level="Understand" aria-pressed="false">Understand</button>
+      <button class="chip" data-level="Apply" aria-pressed="false">Apply</button>
+    </div>
+    <div class="fc-controls" role="group" aria-label="Filter by lesson">
+      <button class="chip" data-lesson="All" aria-pressed="true">All topics</button>
+      <button class="chip" data-lesson="Intro" aria-pressed="false">IP Basics</button>
+      <button class="chip" data-lesson="15.1" aria-pressed="false">15.1 Piracy &amp; Plagiarism</button>
+      <button class="chip" data-lesson="15.2" aria-pressed="false">15.2 DRM &amp; DMCA</button>
+      <button class="chip" id="fcReviewOnly" aria-pressed="false">Review pile only</button>
+      <button class="btn ghost" id="fcShuffle">Shuffle</button>
+    </div>
+
+    <div class="flash-stage">
+      <button class="flash" id="flash" aria-label="Flashcard. Activate to flip.">
+        <div class="face front"><span class="tag" id="fcTagF"></span><div class="q" id="fcFront"></div><span class="hint">Click to flip</span></div>
+        <div class="face back"><span class="tag" id="fcTagB"></span><div class="a" id="fcBack"></div><span class="hint">Click to flip back</span></div>
+      </button>
+    </div>
+    <div class="fc-nav">
+      <button class="btn ghost" id="fcPrev" aria-label="Previous card">← Prev</button>
+      <span class="fc-stats" id="fcCount" aria-live="polite"></span>
+      <div class="row">
+        <button class="btn ghost" id="fcAgain">Review again</button>
+        <button class="btn" id="fcGot">Got it ✓</button>
+      </div>
+      <button class="btn ghost" id="fcNext" aria-label="Next card">Next →</button>
+    </div>
+    <p class="fc-stats" style="text-align:center" id="fcMastery"></p>
+
+    <h3>Misconception Alerts</h3>
+    <p class="lead">Many people hold these beliefs about intellectual property, and they can lead to real legal or academic trouble. Read why each one is wrong.</p>
+    <div class="misc-grid" id="miscGrid"></div>
+
+    <div class="selfcheck" data-selfcheck="1"></div>
+  </section>
+
+  <!-- ================= SECTION 2: WORKED EXAMPLE ================= -->
+  <section class="panel" id="s2" role="tabpanel" aria-labelledby="t2" hidden>
+    <h2>2. Worked Example, Then Your Turn</h2>
+    <p class="lead"><span class="bloom">Apply</span>First, watch an expert match each part of a small business to the right legal protection (<strong>copyright, trademark, trade secret, or patent</strong>) and calculate how long each protection lasts. Then do the same for a different business.</p>
+
+    <div class="scenario">
+      <strong>Real-world scenario: a student startup.</strong> Priya, a Delta College computer science student, launches <strong>ParkPal</strong>, a mobile app that helps students find open parking spaces on the Stockton campus. She wants to know how to protect what she's created. Let's break her business into parts.
+    </div>
+
+    <div id="workedSteps"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="nextStep">Show next step</button>
+      <button class="btn ghost" id="allSteps">Show all steps</button>
+    </div>
+
+    <h3>Your Turn: The "Delta Bites" Food Truck</h3>
+    <div class="scenario">
+      <strong>Scenario:</strong> Marco owns <strong>Delta Bites</strong>, a food truck that parks near the Stockton campus. Use the same reasoning as the worked example: ask <em>what kind of thing</em> is being protected, then choose the protection. Then calculate the two expiration years.
+    </div>
+    <table class="data" id="ipTable">
+      <thead><tr><th scope="col">Item to protect</th><th scope="col">Best protection</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <table class="data" id="yearTable">
+      <thead><tr><th scope="col">Duration question</th><th scope="col">Year it expires</th></tr></thead>
+      <tbody>
+        <tr><td>Marco submits a patent application for his self-cleaning grill design in <strong>2027</strong>. When does the patent expire?</td><td><input inputmode="numeric" aria-label="Patent expiration year" data-ans="2047"></td></tr>
+        <tr><td>Marco took the food photos on his website himself. If Marco dies in <strong>2075</strong>, when does the copyright on the photos expire?</td><td><input inputmode="numeric" aria-label="Copyright expiration year" data-ans="2145"></td></tr>
+      </tbody>
+    </table>
+    <div class="row">
+      <button class="btn" id="checkIp">Check my answers</button>
+      <button class="btn ghost" id="hintIp">Hint</button>
+      <button class="btn ghost" id="showIp">Show solution</button>
+    </div>
+    <div class="feedback" id="ipFb" aria-live="polite"></div>
+
+    <div class="selfcheck" data-selfcheck="2"></div>
+  </section>
+
+  <!-- ================= SECTION 3: QUIZ ================= -->
+  <section class="panel" id="s3" role="tabpanel" aria-labelledby="t3" hidden>
+    <h2>3. Interactive Quiz</h2>
+    <p class="lead">Twelve questions, from easiest to hardest. The early questions check recall; the later ones ask you to apply the laws, analyze situations, and evaluate arguments. Every answer includes an explanation.</p>
+    <div class="card-box" id="quizBox"></div>
+    <div class="selfcheck" data-selfcheck="3"></div>
+  </section>
+
+  <!-- ================= SECTION 4: MATCHING ================= -->
+  <section class="panel" id="s4" role="tabpanel" aria-labelledby="t4" hidden>
+    <h2>4. Matching Activity</h2>
+    <p class="lead"><span class="bloom">Understand</span>Select a term on the left, then the description on the right that matches it.</p>
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <span id="matchStatus" aria-live="polite">Matched 0 of 8 · Mistakes: 0</span>
+      <button class="btn ghost" id="matchReset">Reset and shuffle</button>
+    </div>
+    <div class="match-grid">
+      <div class="match-col" id="matchLeft" aria-label="Terms"></div>
+      <div class="match-col" id="matchRight" aria-label="Descriptions"></div>
+    </div>
+    <div class="feedback" id="matchFb"></div>
+    <div class="selfcheck" data-selfcheck="4"></div>
+  </section>
+
+  <!-- ================= SECTION 5: THINK DEEPER ================= -->
+  <section class="panel" id="s5" role="tabpanel" aria-labelledby="t5" hidden>
+    <h2>5. Think Deeper: Analyze, Evaluate, Create</h2>
+    <p class="lead">These tasks ask you to justify, compare, and produce something original. Commit to your own answer first, then compare it with an expert's response.</p>
+
+    <!-- Task A -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Analyze</span>Task A: Is Copying a Song Really Theft?</h3>
+      <p>The reading presents two competing views on digital copying. Break the debate down: identify the <strong>key claim</strong>, the <strong>evidence or reasoning</strong>, and the <strong>underlying assumption</strong> of each side. Then explain where the two sides actually disagree.</p>
+      <table class="data">
+        <thead><tr><th scope="col">View 1: "Copying is theft"</th><th scope="col">View 2: "The system is unfair"</th></tr></thead>
+        <tbody><tr>
+          <td>Creators invest years of study and training. When the public copies and distributes their work, creators lose sales, can't earn a living, and may leave their careers, so "creative capital" withers.</td>
+          <td>Copying a file leaves the original intact. Intellectual property is often overpriced, and record and movie companies keep most of the profit while creators get a small percentage. Some musicians now sell directly to fans.</td>
+        </tr></tbody>
+      </table>
+      <textarea id="taA" aria-label="Your analysis for Task A" placeholder="View 1's claim is... its evidence is... it assumes...&#10;View 2's claim is... its evidence is... it assumes...&#10;The real disagreement is about..."></textarea>
+      <div class="row"><span class="wordcount" id="wcA">0 words (aim for 60+)</span><button class="btn" data-reveal="revA" data-ta="taA" data-min="30">Compare with expert</button></div>
+      <div class="reveal" id="revA"><div class="expert"><strong>Expert analysis:</strong>
+        <ul>
+          <li><strong>View 1</strong> claims that unauthorized copying is theft. Its evidence is <em>lost future revenue</em>. Its assumption is that every pirated copy replaces a sale, and that income is what motivates creators to keep creating.</li>
+          <li><strong>View 2</strong> claims that copying isn't like stealing a physical item. Its evidence is that the original file is unchanged and that profits are unevenly split. Its assumption is that the harm of piracy falls mainly on corporations, not on creators.</li>
+          <li><strong>The real disagreement</strong> isn't about whether a file is physically taken. Both sides agree it isn't. It's about <em>how to measure harm</em> (lost potential revenue vs. lost physical property) and <em>who is harmed</em> (creators vs. the companies that distribute their work).</li>
+          <li><strong>A key point:</strong> View 2 criticizes the <em>business model</em>, but that doesn't make piracy <em>legal</em>. Unauthorized copying and distribution is still copyright infringement. Some artists' response, selling directly to fans, is a legal alternative.</li>
+        </ul></div></div>
+    </div>
+
+    <!-- Task B -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Evaluate</span>Task B: The Ebook That Won't Open</h3>
+      <div class="scenario"><strong>Scenario:</strong> Alicia legally bought a DRM-protected ebook for her CS11 class. She just got a new tablet, and the ebook won't open on it. A friend sends her a free tool that strips DRM and converts the book to a PDF. Evaluate her options and recommend one. Justify your recommendation using the <strong>law</strong>, <strong>security risk</strong>, and <strong>fairness</strong> to the publisher.</div>
+      <div class="opts" role="group" aria-label="Choose an option">
+        <button class="opt" data-choiceb="1">Option 1: Use the DRM-removal tool, because she already paid for the book</button>
+        <button class="opt" data-choiceb="2">Option 2: Install the seller's approved reading app on the new tablet, or contact the seller or bookstore for help</button>
+        <button class="opt" data-choiceb="3">Option 3: Download a free pirated copy from a file-sharing site instead</button>
+      </div>
+      <textarea id="taB" aria-label="Your justification for Task B" placeholder="Recommend one option. Explain why it's best and why the other two are weaker..."></textarea>
+      <div class="row"><span class="wordcount" id="wcB">0 words (aim for 50+)</span><button class="btn" data-reveal="revB" data-ta="taB" data-min="25">Compare with expert</button></div>
+      <div class="reveal" id="revB"><div class="expert"><strong>Expert evaluation: Option 2 is the best choice.</strong>
+        <ul>
+          <li><strong>Option 1 is illegal, even though she paid.</strong> The DMCA makes it a crime to circumvent DRM, and it outlaws software designed to crack DRM. Owning a legal copy doesn't give her the right to break its protection. Free cracking tools from unknown sources are also a common way to spread malware.</li>
+          <li><strong>Option 3 is piracy.</strong> File-sharing networks are "rife with malware, adware, and hackers," and downloading the book violates the publisher's copyright.</li>
+          <li><strong>Option 2</strong> respects the law and the publisher's rights, carries no security risk, and usually solves the problem, because DRM typically limits <em>which devices and apps</em> can open a file, so the approved app will work.</li>
+          <li><strong>A fair point of criticism:</strong> Alicia's frustration is exactly why DRM is unpopular and why groups like Defective by Design campaign against it. Disagreeing with a law is a reason to advocate for change, not to break it.</li>
+        </ul></div></div>
+    </div>
+
+    <!-- Task C -->
+    <div class="card-box">
+      <h3 style="margin-top:0"><span class="bloom high">Create</span>Task C: Write a Usage License for Your Own Work</h3>
+      <div class="scenario"><strong>Scenario:</strong> You've built a portfolio of original photos of Stockton landmarks (the Delta campus, the waterfront, Miracle Mile) and posted them online. Inspired by <strong>Creative Commons</strong>, which lets owners "more finely describe what can and cannot be done with their work," write your own short usage license. Then explain <em>why</em> you made each choice.</div>
+      <p>Your license should decide, with a reason for each:</p>
+      <ul>
+        <li>Must people give you credit (attribution)? How?</li>
+        <li>May people use the photos commercially, for example in ads or on products for sale?</li>
+        <li>May people edit or remix the photos? If so, must they share their versions under the same terms?</li>
+      </ul>
+      <textarea class="tall" id="taC" aria-label="Your usage license for Task C" placeholder="License for [Your Name]'s Stockton Photo Portfolio&#10;&#10;You MAY: ...&#10;You MUST: ...&#10;You may NOT: ...&#10;&#10;Why I chose these terms: ..."></textarea>
+      <p><strong>Self-assess your license against this checklist:</strong></p>
+      <div class="rubric" id="rubricC">
+        <label><input type="checkbox"> States clearly who owns the work and what it covers</label>
+        <label><input type="checkbox"> Sets an attribution rule (how to credit you)</label>
+        <label><input type="checkbox"> Decides whether commercial use is allowed</label>
+        <label><input type="checkbox"> Decides whether edits or remixes are allowed, and under what terms</label>
+        <label><input type="checkbox"> Gives a reason for each choice that connects to your goals (exposure, income, control)</label>
+        <label><input type="checkbox"> Is written in plain language a classmate could follow</label>
+      </div>
+      <div class="row"><span class="wordcount" id="rubricScore">0 of 6 criteria met</span><button class="btn" data-reveal="revC" data-ta="taC" data-min="40">Show a model license</button></div>
+      <div class="reveal" id="revC"><div class="expert"><strong>Model license (one strong possibility):</strong>
+        <p style="margin:8px 0"><em>"Stockton Landmarks" photos © 2026 Jordan Lee. You MAY share these photos and edit them (crop, filter, add text) for personal, school, and nonprofit projects. You MUST credit me as "Photo by Jordan Lee" with a link to my portfolio, and you must share any edited versions under these same terms. You may NOT use these photos in advertising or on products you sell without my written permission.</em></p>
+        <ul>
+          <li><strong>Attribution required:</strong> my goal is exposure for my photography career, so credit and a link bring new visitors.</li>
+          <li><strong>No commercial use:</strong> if a business wants my work, I want to be paid. This keeps a potential income stream.</li>
+          <li><strong>Edits allowed, with share-alike:</strong> remixes spread my work further, and share-alike keeps the same rules attached to every version.</li>
+        </ul>
+        <p style="margin:8px 0 0">These choices match the real Creative Commons <strong>BY-NC-SA</strong> (Attribution–NonCommercial–ShareAlike) license.</p></div></div>
+    </div>
+
+    <div class="selfcheck" data-selfcheck="5"></div>
+  </section>
+</main>
+
+<footer>CS11 Introduction to Computing &amp; Information Technology · San Joaquin Delta College · Module 15: Intellectual Property</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const fmt = s => esc(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/_([^_]+)_/g, "<em>$1</em>");
+  const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const words = t => (t.trim().match(/\S+/g) || []).length;
+
+  /* ---------- progress ---------- */
+  const completed = new Set();
+  function markDone(n) {
+    if (completed.has(n)) return;
+    completed.add(n);
+    $("#t" + n).classList.add("done");
+    $("#progBar").style.width = (completed.size / 5 * 100) + "%";
+    $(".progress").setAttribute("aria-valuenow", completed.size);
+    $("#progText").textContent = completed.size + " of 5 sections";
+  }
+
+  /* ---------- tabs ---------- */
+  const tabs = $$('[role="tab"]');
+  function openTab(tab) {
+    tabs.forEach(t => {
+      const sel = t === tab;
+      t.setAttribute("aria-selected", sel); t.tabIndex = sel ? 0 : -1;
+      const p = $("#" + t.getAttribute("aria-controls")); p.hidden = !sel; p.classList.toggle("active", sel);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => openTab(t));
+    t.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); openTab(n);
+      }
+    });
+  });
+
+  /* ---------- 1. FLASHCARDS ---------- */
+  const cards = [
+    // Remember
+    { l: "Remember", s: "Intro", f: "What is **intellectual property**?", b: "A product of the mind or intellect over which the owner holds **legal entitlement**, such as software, music, movies, designs, stories, ideas, and new ways of making things." },
+    { l: "Remember", s: "Intro", f: "Name the **four legal tools** for protecting intellectual property.", b: "**Copyright**, **trademark**, **trade secret**, and **patent**." },
+    { l: "Remember", s: "Intro", f: "What does a **copyright** protect, and for how long?", b: "Words, music, and other **expressions** of ideas, for the **life of the copyright holder plus 70 years**." },
+    { l: "Remember", s: "Intro", f: "What does a **trademark** protect?", b: "A **unique symbol or word** that a business uses to identify a product or service, such as a brand name or logo." },
+    { l: "Remember", s: "Intro", f: "What does a **patent** protect, and for how long?", b: "An **invention**. It gives the holder a monopoly on using the invention for **20 years after the patent application is submitted**." },
+    { l: "Remember", s: "Intro", f: "What is a **trade secret**, and how long is it protected?", b: "Secret or proprietary information of a person or organization. It's protected **as long as the owner adequately guards** the secret." },
+    { l: "Remember", s: "15.1", f: "What is **piracy**?", b: "The **illegal copying, use, and distribution** of digital intellectual property, such as software, music, and movies." },
+    { l: "Remember", s: "15.1", f: "What is **plagiarism**?", b: "**Taking credit** for someone else's intellectual property, typically a written idea, by claiming it as your own." },
+    { l: "Remember", s: "15.2", f: "What is **DRM** (digital rights management)?", b: "Technology that protects digital intellectual property by **restricting the devices and apps** that can open a file and **how many times it can be copied**." },
+    { l: "Remember", s: "15.2", f: "What is the **DMCA**, and when did it become law?", b: "The **Digital Millennium Copyright Act**, a U.S. law passed in **1998** that criminalizes producing, distributing, and using technologies designed to **circumvent DRM**." },
+    { l: "Remember", s: "Intro", f: "What were **SOPA** and **PIPA**?", b: "2012 bills (Stop Online Piracy Act, in the House; PROTECT IP Act, in the Senate) that would have let the Justice Department seek court orders to **block websites accused of copyright infringement**. They were shelved after widespread protests and website blackouts." },
+    { l: "Remember", s: "15.1", f: "Which organizations fight piracy for the music, movie, and software industries?", b: "The **RIAA** (Recording Industry Association of America), the **MPAA** (Motion Picture Association of America), and the **SIAA** (Software & Information Industry Association)." },
+    // Understand
+    { l: "Understand", s: "Intro", f: "Why has digitization made intellectual property **harder to protect**?", b: "Digital files can be **copied perfectly and distributed instantly** over the Internet, often without the creator's knowledge or control, which reduces the creator's income." },
+    { l: "Understand", s: "Intro", f: "What is **Creative Commons**, and why was it created?", b: "A legal alternative to traditional copyright, developed by Lawrence Lessig and colleagues, that lets owners **finely describe what others can and can't do** with their work. Supporters believe strict copyright can hold back culture." },
+    { l: "Understand", s: "15.1", f: "Why are **P2P networks and the dark web** risky places to get files?", b: "Besides being a common source of **pirated** content, they are \"rife with **malware, adware, and hackers**.\" Easy file sharing makes piracy *feel* acceptable, but it isn't." },
+    { l: "Understand", s: "15.1", f: "What are **\"three-strikes\" laws**, and why are they controversial?", b: "Laws that **deny a user Internet access** after being accused of copyright violations three times. Critics object that accusations aren't proof and that Internet access is essential." },
+    { l: "Understand", s: "15.1", f: "Why are some people worried about **ACTA**?", b: "The Anti-Counterfeiting Trade Agreement targets international counterfeiting and piracy, but critics fear it will **infringe on consumers' privacy and civil liberties**." },
+    { l: "Understand", s: "15.2", f: "Why is DRM **unpopular** with consumers?", b: "It can keep people from using **legally purchased** media whenever and wherever they like, on any device. Most music now sells without DRM, but it's still common on movies, TV, ebooks, and documents." },
+    { l: "Understand", s: "15.2", f: "What responsibility does the DMCA place on **Internet service providers** and **webcasters**?", b: "ISPs are responsible for **pirated content stored in user accounts** on their servers. Internet radio and other webcasters must **pay the rights holders** for the content they broadcast, which shaped business models like Pandora's." },
+    { l: "Understand", s: "15.2", f: "What does the **EFF** say are the DMCA's unintended consequences?", b: "The Electronic Frontier Foundation says it **impedes scientific research, jeopardizes fair use, and discourages competition and innovation**. Record and movie companies praise it for helping them fight piracy." },
+    // Apply
+    { l: "Apply", s: "Intro", f: "A sneaker company's swoosh logo: which protection applies?", b: "A **trademark**, because it's a unique symbol that identifies the company's products." },
+    { l: "Apply", s: "Intro", f: "An inventor files a patent application in **2026**. When does the patent expire?", b: "In **2046**: 2026 + 20 years from the application date." },
+    { l: "Apply", s: "Intro", f: "A novelist dies in **2050**. Until when is the novel's copyright protected?", b: "Until **2120**: the life of the copyright holder + 70 years (2050 + 70)." },
+    { l: "Apply", s: "Intro", f: "A restaurant keeps its secret spice blend locked away and makes employees sign confidentiality agreements. Which protection is this?", b: "A **trade secret**. It stays protected only as long as the restaurant keeps guarding it." },
+    { l: "Apply", s: "15.1", f: "A student pastes a paragraph from a website into an essay without quotation marks or a citation. What is this?", b: "**Plagiarism**. Tools such as **Turnitin** and **iThenticate** detect it, and penalties can include expulsion. Quote and cite, or paraphrase and cite." },
+    { l: "Apply", s: "15.2", f: "You buy a movie with DRM and use software to break the protection so you can make a backup copy. Is that legal under the DMCA?", b: "**No.** The DMCA makes it a crime to circumvent DRM, even on media you purchased, and outlaws tools designed to crack DRM." }
+  ];
+  const lessonName = { Intro: "IP Basics", "15.1": "Lesson 15.1", "15.2": "Lesson 15.2" };
+  let level = "All", lesson = "All", reviewOnly = false, deck = cards.map((c, i) => i), pos = 0;
+  const status = cards.map(() => "new");
+  const filtered = () => deck.filter(i => (level === "All" || cards[i].l === level) && (lesson === "All" || cards[i].s === lesson) && (!reviewOnly || status[i] === "again"));
+  function renderCard() {
+    const list = filtered();
+    $("#flash").classList.remove("flipped");
+    if (!list.length) {
+      $("#fcFront").innerHTML = reviewOnly ? "Your review pile is empty. Nice work!" : "No cards match these filters.";
+      $("#fcBack").innerHTML = ""; $("#fcTagF").innerHTML = $("#fcTagB").innerHTML = ""; $("#fcCount").textContent = "0 cards";
+    } else {
+      if (pos >= list.length) pos = 0;
+      const c = cards[list[pos]];
+      const tag = `<span class="bloom">${c.l}</span><span class="lesson-tag">${lessonName[c.s]}</span>`;
+      $("#fcTagF").innerHTML = tag; $("#fcTagB").innerHTML = tag;
+      $("#fcFront").innerHTML = fmt(c.f); $("#fcBack").innerHTML = fmt(c.b);
+      $("#fcCount").textContent = `Card ${pos + 1} of ${list.length}`;
+    }
+    const got = status.filter(s => s === "got").length, again = status.filter(s => s === "again").length;
+    $("#fcMastery").textContent = `Mastered: ${got} / ${cards.length} · Review pile: ${again}`;
+  }
+  const flipCard = () => { if (filtered().length) $("#flash").classList.toggle("flipped"); };
+  $("#flash").addEventListener("click", flipCard);
+  $("#fcNext").addEventListener("click", () => { pos = (pos + 1) % Math.max(filtered().length, 1); renderCard(); });
+  $("#fcPrev").addEventListener("click", () => { const n = Math.max(filtered().length, 1); pos = (pos - 1 + n) % n; renderCard(); });
+  function rate(s) { const list = filtered(); if (!list.length) return; status[list[pos]] = s; if (!(reviewOnly && s === "got")) pos++; renderCard(); }
+  $("#fcGot").addEventListener("click", () => rate("got"));
+  $("#fcAgain").addEventListener("click", () => rate("again"));
+  $("#fcShuffle").addEventListener("click", () => { deck = shuffle(deck); pos = 0; renderCard(); });
+  $$(".chip[data-level]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-level]").forEach(c => c.setAttribute("aria-pressed", c === ch)); level = ch.dataset.level; pos = 0; renderCard(); }));
+  $$(".chip[data-lesson]").forEach(ch => ch.addEventListener("click", () => { $$(".chip[data-lesson]").forEach(c => c.setAttribute("aria-pressed", c === ch)); lesson = ch.dataset.lesson; pos = 0; renderCard(); }));
+  $("#fcReviewOnly").addEventListener("click", e => { reviewOnly = !reviewOnly; e.currentTarget.setAttribute("aria-pressed", reviewOnly); pos = 0; renderCard(); });
+  document.addEventListener("keydown", e => {
+    if ($("#s1").hidden || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (e.key === "ArrowRight") $("#fcNext").click();
+    else if (e.key === "ArrowLeft") $("#fcPrev").click();
+    else if (e.key === " " && document.activeElement.tagName !== "BUTTON") { e.preventDefault(); flipCard(); }
+  });
+
+  /* ---------- misconceptions ---------- */
+  const misconceptions = [
+    { m: "\"If I bought it, I can copy it however I want.\"", w: "Buying a movie, song, or ebook gives you the right to **use** it, not to break its protection. Under the **DMCA**, circumventing DRM is a crime even on media you legally purchased.", r: "Use the seller's approved apps and devices, or buy DRM-free versions when they're available." },
+    { m: "\"If it's easy to find online, it must be free to use.\"", w: "Being **available** isn't the same as having **permission**. P2P networks make sharing easy, which makes piracy feel acceptable, but copying and distributing copyrighted work without permission is still illegal.", r: "Assume online content is copyrighted unless the owner grants permission, for example through a **Creative Commons** license, or the work is in the public domain." },
+    { m: "\"Changing a few words means it's not plagiarism.\"", w: "Plagiarism is taking credit for someone else's **ideas**, not just their exact words. Rationalizing a \"minor\" offense still leaves people in embarrassing and costly situations.", r: "Use quotation marks for exact words, and **cite the source** for both quotations and paraphrased ideas." },
+    { m: "\"Copyrights and patents both last forever, or at least for life.\"", w: "Each protection has its own rule, and mixing them up leads to wrong conclusions about what's free to use.", r: "**Copyright:** life of the holder + 70 years. **Patent:** 20 years from the application date. **Trade secret:** as long as it's guarded. **Trademark:** identifies a brand while the business uses it." },
+    { m: "\"The DMCA protects copyright all over the world.\"", w: "The module's summary table calls it global protection, but the reading itself explains that the DMCA is a **U.S. law**, passed to implement international treaties signed at the WIPO conference in 1996.", r: "The DMCA applies in the United States. International efforts, such as **WIPO treaties** and the proposed **ACTA**, address piracy across countries." }
+  ];
+  $("#miscGrid").innerHTML = misconceptions.map((x, i) => `
+    <article class="misc"><h4>⚠ Misconception ${i + 1}</h4>
+      <p><span class="label">Belief:</span> ${fmt(x.m)}</p>
+      <p><span class="label">Why it's wrong:</span> ${fmt(x.w)}</p>
+      <p style="margin-bottom:0"><span class="label">Correct reasoning:</span> ${fmt(x.r)}</p></article>`).join("");
+
+  /* ---------- 2. WORKED EXAMPLE ---------- */
+  const steps = [
+    { h: "Step 1 · Use a decision question for each item", t: "For each part of ParkPal, ask: **Is it a brand identifier? A creative expression? A secret? An invention?** These four questions map to trademark, copyright, trade secret, and patent.",
+      why: "Each protection guards a different _kind_ of thing. Classifying the item first keeps you from choosing a protection by guesswork." },
+    { h: "Step 2 · The name \"ParkPal\" and its logo → Trademark", t: "The name and the green car-and-pin logo identify Priya's app and set it apart from competitors.",
+      why: "A trademark protects \"a unique symbol or word used by a business to identify a product or service.\" The name isn't a creative work to copyright or an invention to patent; its job is **brand identification**." },
+    { h: "Step 3 · The app's source code, screen text, and tutorial video → Copyright", t: "Priya wrote the code and the help text, and she recorded a tutorial video.",
+      why: "Copyright protects \"words, music, and other expressions.\" Software and written or recorded content are **expressions** of ideas, so copyright fits, and it applies as soon as she creates the work." },
+    { h: "Step 4 · Her private formula that predicts which lots will open up → Trade secret", t: "Priya's prediction formula combines class schedules and past parking data. Only she and one partner know how it works.",
+      why: "A trade secret is protected **only as long as it's adequately guarded**, so Priya must keep the formula confidential (e.g., with nondisclosure agreements). If it leaks or she publishes it, the protection is gone." },
+    { h: "Step 5 · A new solar-powered sensor she invented for parking spaces → Patent", t: "Priya designs a new device that detects whether a space is occupied and submits a patent application in **2026**.",
+      why: "A patent protects an **invention**. Calculation: the monopoly lasts 20 years from the application, so **2026 + 20 = 2046**. After 2046, anyone can build the sensor." },
+    { h: "Step 6 · How long does the copyright last?", t: "Suppose Priya lives until **2085**. Her code and video are protected for her life plus 70 years: **2085 + 70 = 2155**.",
+      why: "Copyright is measured from the **holder's death**, not from when the work was created. That's why copyright usually lasts much longer than a patent." }
+  ];
+  let shown = 0;
+  $("#workedSteps").innerHTML = steps.map((s, i) => `<div class="step hidden" id="ws${i}"><h4>${esc(s.h)}</h4><p style="margin:4px 0">${fmt(s.t)}</p><div class="why"><strong>Reasoning:</strong> ${fmt(s.why)}</div></div>`).join("");
+  function showStep() {
+    if (shown < steps.length) { $("#ws" + shown).classList.remove("hidden"); shown++; }
+    if (shown === steps.length) { $("#nextStep").disabled = true; $("#nextStep").textContent = "All steps shown"; }
+  }
+  showStep();
+  $("#nextStep").addEventListener("click", showStep);
+  $("#allSteps").addEventListener("click", () => { while (shown < steps.length) showStep(); });
+
+  const protections = ["Copyright", "Trademark", "Trade secret", "Patent"];
+  const ipItems = [
+    ["Marco's secret recipe for his chipotle-lime salsa, known only to him and his sister", 2],
+    ["The \"Delta Bites\" name and the cartoon taco logo painted on the truck", 1],
+    ["The food photos and menu descriptions Marco created for his website", 0],
+    ["A new self-cleaning grill mechanism that Marco invented", 3]
+  ];
+  $("#ipTable tbody").innerHTML = ipItems.map((e, i) => `<tr><td>${esc(e[0])}</td><td><select aria-label="Protection for item ${i + 1}" data-ans="${e[1]}"><option value="">Choose…</option>${protections.map((p, k) => `<option value="${k}">${p}</option>`).join("")}</select></td></tr>`).join("");
+  $("#checkIp").addEventListener("click", () => {
+    let right = 0; const sels = $$("#ipTable select"), ins = $$("#yearTable input");
+    sels.forEach(s => { const ok = s.value === s.dataset.ans; s.classList.toggle("ok-field", ok); s.classList.toggle("no-field", !ok); if (ok) right++; });
+    ins.forEach(inp => { const ok = inp.value.trim() === inp.dataset.ans; inp.classList.toggle("ok-field", ok); inp.classList.toggle("no-field", !ok); if (ok) right++; });
+    const total = sels.length + ins.length, fb = $("#ipFb");
+    fb.className = "feedback show " + (right === total ? "good" : "bad");
+    fb.textContent = right === total
+      ? "All 6 correct! Salsa recipe = trade secret (it must stay guarded), name and logo = trademark, photos and text = copyright, grill = patent. Patent: 2027 + 20 = 2047. Copyright: 2075 + 70 = 2145."
+      : `${right} of ${total} correct. For each red box, ask the four decision questions from Step 1. For the years: a patent counts 20 years from the application, and copyright counts 70 years after the creator's death.`;
+  });
+  $("#hintIp").addEventListener("click", () => { const fb = $("#ipFb"); fb.className = "feedback show good"; fb.textContent = "Hint: something kept secret and known by only a few people is a trade secret. Something you invented and built is a patent. For the patent year, add 20; for the copyright year, add 70 to the year Marco dies."; });
+  $("#showIp").addEventListener("click", () => {
+    $$("#ipTable select").forEach(s => { s.value = s.dataset.ans; s.classList.add("ok-field"); s.classList.remove("no-field"); });
+    $$("#yearTable input").forEach(i => { i.value = i.dataset.ans; i.classList.add("ok-field"); i.classList.remove("no-field"); });
+    const fb = $("#ipFb"); fb.className = "feedback show good"; fb.textContent = "Solution shown. Before moving on, explain to yourself why each item fits its protection.";
+  });
+
+  /* ---------- 3. QUIZ ---------- */
+  const quiz = [
+    { b: "Remember", q: "Which legal protection covers an **invention**?", o: ["Copyright", "Trademark", "Patent", "Trade secret"], a: 2, e: "A patent gives the holder a monopoly on using an invention for 20 years after the application is submitted." },
+    { b: "Remember", q: "How long does a **copyright** last?", o: ["20 years after the application", "The life of the copyright holder plus 70 years", "As long as it's kept secret", "Forever"], a: 1, e: "Copyright lasts for the holder's life plus 70 years. Twenty years is the patent rule; \"as long as it's guarded\" is the trade-secret rule." },
+    { b: "Remember", q: "What does **DRM** do?", o: ["Detects plagiarism in essays", "Restricts the devices and apps that can open a file and how many times it can be copied", "Blocks pirate websites by court order", "Registers trademarks"], a: 1, e: "DRM is a technology built into files. Turnitin detects plagiarism, and SOPA and PIPA proposed blocking websites." },
+    { b: "Understand", q: "Why is a **trade secret** different from the other three protections?", o: ["It lasts exactly 20 years", "It's protected only as long as the owner adequately guards the secret", "It applies only to music", "It's granted automatically to every business"], a: 1, e: "Its protection depends on secrecy. Once the secret leaks or is published, the protection is gone." },
+    { b: "Understand", q: "Why did many websites black out for a day in 2012?", o: ["To protest SOPA and PIPA, which critics feared would lead to government censorship", "To support the DMCA", "To celebrate Creative Commons", "Because of a malware attack"], a: 0, e: "Critics feared the bills would let the government block websites accused of infringement, a step toward censorship. Public pressure got the bills shelved." },
+    { b: "Understand", q: "What is the main purpose of **Creative Commons**?", o: ["To make all content free", "To let owners finely describe what others can and can't do with their work", "To replace the DMCA", "To detect piracy"], a: 1, e: "Creative Commons gives creators flexible choices, such as requiring attribution or prohibiting commercial use, as an alternative to \"all rights reserved.\"" },
+    { b: "Apply", q: "A company protects the design of its new folding e-bike frame for 20 years. Its patent application was submitted in **2025**. When does protection end?", o: ["2045", "2095", "2035", "Never, as long as it's guarded"], a: 0, e: "2025 + 20 = 2045. Adding 70 confuses the patent rule with the copyright rule." },
+    { b: "Apply", q: "A YouTuber posts a full episode of a TV show. The show's owner sends a notice and the video is removed. Which law most directly supports this action?", o: ["The DMCA", "ACTA", "A three-strikes law", "Trade secret law"], a: 0, e: "The DMCA has been used to make platforms and providers take down infringing content, and it holds providers responsible for pirated content stored on their servers." },
+    { b: "Apply", q: "A student submits a research paper downloaded from a free essay website. What is the most likely outcome?", o: ["Nothing, because the paper was free", "Turnitin or a similar tool flags it, and the student faces serious penalties, possibly expulsion", "The student is protected by fair use", "The website is responsible, not the student"], a: 1, e: "Submitting papers from such sites is plagiarism. Detection software finds it \"with a high rate of success,\" and schools impose strict penalties." },
+    { b: "Analyze", q: "A singer refuses a record-label contract and sells her songs directly to fans online. Which argument from the reading does her choice reflect?", o: ["Copying a file is never theft", "Industry companies keep most of the profit while creators get a small percentage", "DRM makes music more valuable", "Patents protect songs for 20 years"], a: 1, e: "The reading notes that the view that creators get a small share of the profits drove many musicians to record independently and sell directly to fans." },
+    { b: "Evaluate", q: "A classmate argues: \"The DMCA is good for everyone because it reduces piracy.\" Which response is **most balanced**?", o: ["Agree completely; there are no downsides", "Record and movie companies praise it for enforcing copyright, but the EFF argues that it impedes research, threatens fair use, and discourages innovation", "Disagree completely; it has no effect on piracy", "The DMCA doesn't apply to digital media"], a: 1, e: "A balanced evaluation weighs both sides: the industry's view (enforcement) and the EFF's view (unintended consequences)." },
+    { b: "Evaluate", q: "A startup wants to protect a unique cooking technique for as long as possible. Patent it, or keep it as a trade secret? Which reasoning is **strongest**?", o: ["Patent, because patents last forever", "Trade secret, because it can last indefinitely if guarded, though it's lost if the secret leaks; a patent is public and lasts only 20 years", "Copyright, because it protects recipes for life plus 70 years", "Neither, because techniques can't be protected"], a: 1, e: "A trade secret has no fixed end date but depends on secrecy. A patent gives a guaranteed monopoly but requires public disclosure and expires after 20 years. The best choice depends on whether the secret can realistically be kept." }
+  ];
+  let qi = 0, qScore = 0; const qRes = [];
+  function renderQ() {
+    const box = $("#quizBox");
+    if (qi >= quiz.length) {
+      const pct = Math.round(qScore / quiz.length * 100);
+      const msg = pct >= 85 ? "Excellent. You've mastered Module 15's key ideas." : pct >= 65 ? "Good progress. Review the explanations for the questions you missed, then retake the quiz." : "Revisit the flashcards and the worked example, then try again.";
+      box.innerHTML = `<div style="text-align:center"><div class="score-big">${qScore} / ${quiz.length}</div><p>${pct}% · ${msg}</p><div class="dots" style="justify-content:center">${qRes.map(r => `<span class="${r ? "r" : "w"}"></span>`).join("")}</div><button class="btn" id="qRetry">Retake quiz</button></div>`;
+      $("#qRetry").addEventListener("click", () => { qi = 0; qScore = 0; qRes.length = 0; renderQ(); });
+      return;
+    }
+    const q = quiz[qi], high = /Analyze|Evaluate/.test(q.b);
+    box.innerHTML = `
+      <div class="q-meta"><span>Question ${qi + 1} of ${quiz.length}</span><span>Score: ${qScore}</span></div>
+      <div class="dots" aria-hidden="true">${quiz.map((_, k) => `<span class="${k < qRes.length ? (qRes[k] ? "r" : "w") : ""}${k === qi ? " cur" : ""}"></span>`).join("")}</div>
+      <p class="q-text"><span class="bloom${high ? " high" : ""}">${q.b}</span>${fmt(q.q)}</p>
+      <div class="opts" role="group" aria-label="Answer choices">${shuffle(q.o.map((_, k) => k)).map((k, p) => `<button class="opt" data-k="${k}">${String.fromCharCode(65 + p)}. ${fmt(q.o[k])}</button>`).join("")}</div>
+      <div class="feedback" id="qFb" aria-live="polite"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="qNext" hidden>${qi === quiz.length - 1 ? "See results" : "Next question →"}</button></div>`;
+    $$(".opt", box).forEach(btn => btn.addEventListener("click", () => {
+      const ok = +btn.dataset.k === q.a;
+      $$(".opt", box).forEach(b => { b.disabled = true; if (+b.dataset.k === q.a) b.classList.add("correct"); });
+      if (!ok) btn.classList.add("wrong");
+      if (ok) qScore++; qRes.push(ok);
+      const fb = $("#qFb"); fb.className = "feedback show " + (ok ? "good" : "bad");
+      fb.innerHTML = (ok ? "<strong>Correct.</strong> " : "<strong>Not quite.</strong> ") + fmt(q.e);
+      const nx = $("#qNext"); nx.hidden = false; nx.focus();
+      nx.addEventListener("click", () => { qi++; renderQ(); });
+    }));
+  }
+  renderQ();
+
+  /* ---------- 4. MATCHING ---------- */
+  const pairs = [
+    ["Copyright", "Protects words, music, and other expressions for the holder's life plus 70 years"],
+    ["Trademark", "Protects a unique symbol or word that identifies a business's product or service"],
+    ["Patent", "Gives a 20-year monopoly on an invention, counted from the application date"],
+    ["Trade secret", "Protected only as long as the owner adequately guards the information"],
+    ["Piracy", "Illegal copying, use, and distribution of digital software, music, and movies"],
+    ["Plagiarism", "Taking credit for someone else's ideas or writing as your own"],
+    ["DRM", "Technology that limits which devices can open a file and how often it can be copied"],
+    ["DMCA", "1998 U.S. law that makes circumventing DRM a crime"]
+  ];
+  let selL = null, selR = null, matched = 0, mistakes = 0;
+  function buildMatch() {
+    matched = 0; mistakes = 0; selL = selR = null;
+    $("#matchLeft").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item term" data-i="${i}" data-side="L">${esc(pairs[i][0])}</button>`).join("");
+    $("#matchRight").innerHTML = shuffle(pairs.map((p, i) => i)).map(i => `<button class="m-item" data-i="${i}" data-side="R">${esc(pairs[i][1])}</button>`).join("");
+    $("#matchFb").className = "feedback"; updMatch();
+    $$(".m-item").forEach(b => b.addEventListener("click", () => pick(b)));
+  }
+  const updMatch = () => { $("#matchStatus").textContent = `Matched ${matched} of ${pairs.length} · Mistakes: ${mistakes}`; };
+  function pick(b) {
+    if (b.classList.contains("matched")) return;
+    const side = b.dataset.side;
+    $$(`.m-item[data-side="${side}"]`).forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel");
+    if (side === "L") selL = b; else selR = b;
+    if (selL && selR) {
+      if (selL.dataset.i === selR.dataset.i) {
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("matched"); x.setAttribute("aria-disabled", "true"); });
+        matched++;
+      } else {
+        mistakes++;
+        [selL, selR].forEach(x => { x.classList.remove("sel"); x.classList.add("shake"); setTimeout(() => x.classList.remove("shake"), 400); });
+      }
+      selL = selR = null; updMatch();
+      if (matched === pairs.length) {
+        const fb = $("#matchFb"); fb.className = "feedback show good";
+        fb.textContent = mistakes === 0 ? "Perfect: all 8 matched with no mistakes!" : `All matched with ${mistakes} mistake(s). Reset and try for a perfect round.`;
+      }
+    }
+  }
+  $("#matchReset").addEventListener("click", buildMatch);
+  buildMatch();
+
+  /* ---------- 5. THINK DEEPER ---------- */
+  [["taA", "wcA", 60], ["taB", "wcB", 50]].forEach(([ta, wc, goal]) => {
+    $("#" + ta).addEventListener("input", e => { $("#" + wc).textContent = `${words(e.target.value)} words (aim for ${goal}+)`; });
+  });
+  $$("[data-choiceb]").forEach(b => b.addEventListener("click", () => { $$("[data-choiceb]").forEach(x => x.classList.remove("picked")); b.classList.add("picked"); }));
+  $$("#rubricC input").forEach(cb => cb.addEventListener("change", () => { $("#rubricScore").textContent = `${$$("#rubricC input:checked").length} of 6 criteria met`; }));
+  $$("[data-reveal]").forEach(btn => btn.addEventListener("click", () => {
+    const ta = $("#" + btn.dataset.ta), min = +btn.dataset.min;
+    if (words(ta.value) < min) {
+      ta.focus(); ta.style.borderColor = "var(--user-accent)";
+      ta.setAttribute("placeholder", `Write your own answer first (at least ${min} words). Committing to an answer before you see the expert's is how you learn.`);
+      return;
+    }
+    ta.style.borderColor = ""; $("#" + btn.dataset.reveal).classList.add("show");
+  }));
+
+  /* ---------- SELF-CHECKS ---------- */
+  const selfChecks = {
+    1: [
+      { q: "The golden arches that identify a fast-food chain are protected by a…", o: ["Patent", "Trademark", "Copyright"], a: 1, e: "A trademark protects a unique symbol or word that identifies a business." },
+      { q: "Which statement about piracy is **true**?", o: ["Files on P2P networks are legal to download", "Piracy is the illegal copying, use, and distribution of digital IP", "Piracy only refers to selling physical DVDs"], a: 1, e: "Piracy ranges from a teen downloading music to large-scale selling of pirated discs; all of it is illegal." }
+    ],
+    2: [
+      { q: "A song is written by a composer who dies in **2060**. Its copyright expires in…", o: ["2080", "2130", "2160"], a: 1, e: "2060 + 70 = 2130. Copyright is measured from the creator's death." },
+      { q: "A company publishes its \"secret\" formula on its website. What happens to its trade-secret protection?", o: ["Nothing changes", "It's lost, because the secret is no longer guarded", "It becomes a patent"], a: 1, e: "Trade-secret protection depends entirely on keeping the information confidential." }
+    ],
+    3: [
+      { q: "Under the DMCA, Internet service providers can be held responsible for…", o: ["Pirated content stored in user accounts on their servers", "Every website their users visit", "Students' plagiarism"], a: 0, e: "The DMCA holds ISPs responsible for pirated content stored on their servers." },
+      { q: "Which group argues that the DMCA jeopardizes fair use?", o: ["The RIAA", "The Electronic Frontier Foundation (EFF)", "The MPAA"], a: 1, e: "The EFF criticizes the DMCA's unintended consequences; the RIAA and MPAA praise it." }
+    ],
+    4: [
+      { q: "Turnitin and iThenticate are tools that detect…", o: ["DRM", "Plagiarism", "Malware"], a: 1, e: "Teachers use them to find plagiarism in electronically submitted work." },
+      { q: "Most recording companies today sell music…", o: ["With heavy DRM", "Without embedded DRM", "Only on CDs"], a: 1, e: "Consumer pushback led most music sellers to drop DRM; it's still common on movies, ebooks, and documents." }
+    ],
+    5: [
+      { q: "Why is breaking DRM on an ebook you bought still illegal?", o: ["The DMCA criminalizes circumventing DRM, regardless of ownership", "Ebooks can't be bought", "DRM is a trademark"], a: 0, e: "Paying for a copy doesn't grant permission to bypass its protection." },
+      { q: "A Creative Commons license that requires credit but forbids commercial use mainly helps the creator…", o: ["Give up all rights", "Gain exposure while keeping income opportunities", "Get a patent"], a: 1, e: "Attribution spreads the creator's name; NonCommercial keeps paid uses for the creator." }
+    ]
+  };
+  const confAdvice = { 1: "Revisit this section before moving on: reread the flashcards or steps you weren't sure about.", 2: "Good. Review any item you missed, then continue.", 3: "Great! You're ready for the next section." };
+  $$("[data-selfcheck]").forEach(box => {
+    const n = box.dataset.selfcheck, items = selfChecks[n]; let answered = 0;
+    box.innerHTML = `<h3>✔ Self-Check: Section ${n}</h3><p class="lead" style="margin-bottom:8px">Two quick questions to check your understanding before you move on.</p>` +
+      items.map((it, j) => `<div class="sc-item" data-j="${j}"><p style="margin:10px 0 4px"><strong>${j + 1}.</strong> ${fmt(it.q)}</p><div class="opts">${shuffle(it.o.map((_, k) => k)).map(k => `<button class="opt" data-k="${k}">${fmt(it.o[k])}</button>`).join("")}</div><div class="feedback"></div></div>`).join("") +
+      `<div class="confidence"><strong>How confident do you feel?</strong><br><button class="btn ghost" data-c="1">Not yet</button><button class="btn ghost" data-c="2">Getting there</button><button class="btn ghost" data-c="3">Confident</button><div class="feedback"></div></div>` +
+      (n < 5 ? `<div class="row" style="margin-top:12px"><button class="btn accent" data-go="${+n + 1}">Continue to Section ${+n + 1} →</button></div>` : "");
+    $$(".sc-item", box).forEach(item => {
+      const it = items[item.dataset.j];
+      $$(".opt", item).forEach(b => b.addEventListener("click", () => {
+        const ok = +b.dataset.k === it.a;
+        $$(".opt", item).forEach(x => { x.disabled = true; if (+x.dataset.k === it.a) x.classList.add("correct"); });
+        if (!ok) b.classList.add("wrong");
+        const fb = $(".feedback", item); fb.className = "feedback show " + (ok ? "good" : "bad"); fb.innerHTML = (ok ? "✓ " : "✗ ") + fmt(it.e);
+        if (++answered === items.length) markDone(+n);
+      }));
+    });
+    $$("[data-c]", box).forEach(b => b.addEventListener("click", () => { const fb = $(".confidence .feedback", box); fb.className = "feedback show " + (b.dataset.c === "1" ? "bad" : "good"); fb.textContent = confAdvice[b.dataset.c]; }));
+    const go = $("[data-go]", box); if (go) go.addEventListener("click", () => openTab($("#t" + go.dataset.go)));
+  });
+
+  renderCard();
+})();
+</script>
+</body>
+</html>
